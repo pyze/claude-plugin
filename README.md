@@ -78,6 +78,7 @@ The plugin provides hooks for PDCA workflow automation:
 |------|-------|---------|
 | PDCA plan transition | `PreToolUse:EnterPlanMode` | Transition issue to `pdca:plan`, print PDCA reminder |
 | Principles check | `PreToolUse:ExitPlanMode` | Validate plan against project principles before execution |
+| Decomplection review | `PreToolUse:ExitPlanMode` | Gate plan finalization with decomplection checklist |
 | Block local plans | `PreToolUse:Write` | Prevent creating local plan files (forces GitHub Issues) |
 | Issue stack display | `PreToolUse:Bash\|Task\|Edit` | Show current issue stack context |
 | Git commit reminder | `PostToolUse:Bash` | Remind to update issue stack on commit |
@@ -103,6 +104,7 @@ The plugin provides hooks for PDCA workflow automation:
 | `mementum-session-start.sh` | Load recent memories at session start |
 | `mementum-session-end.sh` | Memory creation reminder at session end |
 | `block-local-plans.sh` | Prevent local plan file creation |
+| `decomplection-review.sh` | Gate plan exit with decomplection checklist |
 
 ## Project Setup Requirements
 

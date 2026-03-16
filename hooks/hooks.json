@@ -20,6 +20,15 @@
         ]
       },
       {
+        "matcher": "ExitPlanMode",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/scripts/decomplection-review.sh"
+          }
+        ]
+      },
+      {
         "matcher": "Bash|Task|Edit",
         "hooks": [
           {
