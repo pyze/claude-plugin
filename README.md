@@ -60,6 +60,14 @@ Or add to your project's `.claude/settings.json`:
 |-------|-------------|
 | `mementum` | Git-based memory system for persistent learning across sessions |
 
+### Library-Specific Skills (v3.0)
+| Skill | Description |
+|-------|-------------|
+| `pathom3-eql` | Pathom 3 resolver patterns, EQL queries, error handling, ident conventions |
+| `replicant-ui` | Replicant vDOM, hiccup syntax, event handlers, lifecycle hooks, JS interop |
+| `continuous-eql` | Missionary signal graph, reactive Pathom, MissionaryTask/Flow protocols |
+| `pyramid-state-management` | Pyramid normalized store, entity identity, ident conventions |
+
 ## Commands
 
 | Command | Description |
