@@ -1,0 +1,10 @@
+{
+  "name": "claude-plugin",
+  "description": "Clojure development skills, coding standards, and workflow infrastructure for Claude Code",
+  "version": "1.0.0",
+  "author": {"name": "Mark Addleman"},
+  "homepage": "https://github.com/pyze/claude-plugin",
+  "repository": "https://github.com/pyze/claude-plugin",
+  "license": "MIT",
+  "keywords": ["clojure", "clojurescript", "skills", "coding-standards", "integrant", "shadow-cljs", "repl", "pathom", "replicant"]
+}

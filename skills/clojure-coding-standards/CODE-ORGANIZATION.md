@@ -1,0 +1,500 @@
+# Code Organization Guidelines
+
+Function and namespace size guidelines for maintainability, testability, and readability.
+
+## Function Size Guidelines
+
+**Recommended LOC ranges:**
+
+- **Ideal: 10-40 LOC** - Pure functions with single responsibility
+- **Acceptable: 40-80 LOC** - Complex logic with clear structure, multi-arity functions
+- **Review Needed: 80-150 LOC** - Candidates for extraction and refactoring
+- **Red Flag: 150+ LOC** - Almost always should be decomposed into smaller functions
+
+**Why these limits matter:**
+
+```
+50 LOC   → Fits one screen, easy to hold context
+100 LOC  → Two screens, requires scrolling, harder to reason about
+150+ LOC → Difficult to track all branches and dependencies
+```
+
+### Clojure-Specific Size Factors
+
+**Multi-arity functions** add 10-20 LOC but are acceptable if total < 80:
+
+```clojure
+;; ✅ ACCEPTABLE - Multiple arities, total ~60 LOC
+(defn make-join
+  ([keys]
+   (make-join keys :inner))
+
+  ([keys join-type]
+   (make-join keys join-type nil))
+
+  ([keys join-type callback]
+   ;; ~50 LOC actual implementation
+   (let [combine-fn ...]
+     ...)))
+```
+
+**Let-binding depth** affects readability more than LOC count:
+
+```clojure
+;; ❌ HARD TO FOLLOW - Nested let bindings bury logic
+(defn compile-circuit [operators]
+  (let [optimized (optimize operators)]
+    (let [operators (compile-operators optimized)]
+      (let [circuit (chain operators)]
+        ...))))
+
+;; ✅ CLEARER - Extract helpers to reduce nesting
+(defn compile-circuit [operators]
+  (let [optimized (optimize operators)]
+    (-> optimized
+        compile-operators
+        chain
+        finalize)))
+```
+
+**High-arity functions** (5+ parameters) reduce clarity:
+
+```clojure
+;; ❌ Too many parameters - hard to remember order
+(defn query-entities [storage attr min-val max-val limit offset]
+  ...)
+
+;; ✅ CLEARER - Use maps for options
+(defn query-entities [storage attr {:keys [min max limit offset]}]
+  ...)
+
+;; ✅ CLEARER - Use records for related params
+(defn query-entities [storage {:keys [attr min max limit offset]}]
+  ...)
+```
+
+---
+
+## Namespace Size Guidelines
+
+**Recommended LOC ranges:**
+
+- **Ideal: 200-400 LOC** - Cohesive module with 5-15 functions
+- **Acceptable: 400-1000 LOC** - Related functionality, single domain concern
+- **Review Needed: 1000-1500 LOC** - Candidates for namespace splitting
+- **Red Flag: 1500+ LOC** - Likely combines multiple concerns, should be split
+
+**Codebase metrics (reactive-datascript):**
+
+```
+✅ HEALTHY:
+arrow_types.clj         ~260 LOC   (8 functions)
+operator_abstractions   ~717 LOC   (4 protocol implementations)
+join.clj                ~813 LOC   (13 functions)
+
+⚠️ OVER THRESHOLD:
+arrow_zset.clj          3381 LOC   (52 functions) → Split recommended
+compiler.clj            1606 LOC   (17 functions) → Split recommended
+window_operators.clj    1449 LOC   (multiple join types) → Split recommended
+```
+
+### When to Split a Namespace
+
+**Split when ANY of these are true:**
+
+1. ✗ File has 1500+ LOC
+2. ✗ Functions solve 3+ distinct problems (e.g., compilation + circuit building)
+3. ✗ Some functions are only used by 1-2 other functions in the module
+4. ✗ High-level API mixed with low-level implementation details
+5. ✗ Can't describe module purpose in one sentence
+
+**Example: `compiler.clj` candidates for split:**
+
+```clojure
+;; SPLIT 1: compiler.clj (~600 LOC)
+;; Purpose: High-level query compilation
+(defn compile-circuit [...])
+(defn optimize-operators [...])
+
+;; SPLIT 2: compiler_operators.clj (~500 LOC)
+;; Purpose: Individual operator compilation
+(defn compile-join [...])
+(defn compile-filter [...])
+(defn compile-scan [...])
+
+;; SPLIT 3: compiler_optimizations.clj (~500 LOC)
+;; Purpose: Optimization passes
+(defn optimize-filter-pushdown [...])
+(defn optimize-join-ordering [...])
+```
+
+---
+
+## Refactoring Triggers
+
+**Extract a helper function when:**
+
+✗ Function has 2+ independent loops or recursions
+```clojure
+;; ❌ TWO SEPARATE JOBS
+(defn process-data [data]
+  (loop [result [] items data]          ; Job 1: Filtering
+    (if (empty? items)
+      (loop [acc {} r result]           ; Job 2: Grouping
+        ...))))
+
+;; ✅ EXTRACTED HELPERS
+(defn process-data [data]
+  (let [filtered (filter-by-criteria data)]
+    (group-by-key filtered)))
+```
+
+✗ Function has 3+ nested let-bindings
+```clojure
+;; ❌ NESTED LETS - Hard to follow
+(defn join-tables [table-a table-b]
+  (let [index-a (index-by-key table-a)]
+    (let [index-b (index-by-key table-b)]
+      (let [matching (find-matches index-a index-b)]
+        ...))))
+
+;; ✅ HELPER FUNCTIONS
+(defn join-tables [table-a table-b]
+  (let [index-a (index-by-key table-a)
+        index-b (index-by-key table-b)
+        matching (find-matches index-a index-b)]
+    ...))
+
+;; OR USE THREADING
+(defn join-tables [table-a table-b]
+  (-> [table-a table-b]
+      (index-tables)
+      (find-matches)
+      (build-result)))
+```
+
+✗ Function has 3+ major conditional branches with different domains
+```clojure
+;; ❌ MULTIPLE CONCERNS - Query parsing + execution + formatting
+(defn execute-query [query]
+  (cond
+    ;; Concern 1: Query validation
+    (invalid-query? query) (throw (ex-info "Invalid" {}))
+
+    ;; Concern 2: Choose execution strategy
+    (join-query? query) (execute-join query)
+    (scan-query? query) (execute-scan query)
+
+    ;; Concern 3: Format result
+    :else (format-result result)))
+
+;; ✅ SEPARATE FUNCTIONS
+(defn execute-query [query]
+  (validate-query query)
+  (let [result (choose-executor query)]
+    (format-result result)))
+```
+
+✗ Function uses variable names 2+ times (indicates scope creep)
+```clojure
+;; ❌ Variables reused - suggests multiple jobs
+(defn transform [data]
+  (let [data (filter-data data)]      ; data reassigned
+    (let [data (map-data data)]        ; data reassigned again
+      (let [data (sort-data data)]     ; data reassigned third time
+        data))))
+
+;; ✅ CLEAR DATA FLOW
+(defn transform [data]
+  (-> data
+      filter-data
+      map-data
+      sort-data))
+```
+
+✗ Function performs both business logic and error handling
+```clojure
+;; ❌ MIXED CONCERNS - Logic + error handling interleaved
+(defn process-items [items]
+  (try
+    (let [validated (validate items)]
+      (let [processed (transform validated)]
+        (save-result processed)))))
+
+;; ✅ SEPARATED - Helper handles validation
+(defn process-items [items]
+  (-> items
+      validate-items
+      transform-items
+      save-result))
+```
+
+---
+
+## Function Complexity Metrics
+
+**Red flags for overly complex functions:**
+
+| Metric | Yellow Flag | Red Flag | Action |
+|--------|------------|----------|--------|
+| **Lines** | 80-120 | 150+ | Extract helpers |
+| **Nesting depth** | 3+ levels | 5+ levels | Reduce with threading macros |
+| **Parameters** | 4-5 | 6+ | Use maps/records |
+| **Cyclomatic complexity** | 5-8 paths | 10+ paths | Split into sub-functions |
+| **Let bindings** | 5-7 | 10+ | Extract to helpers or use threading |
+| **Cond branches** | 4-6 | 8+ | Use multimethod or separate functions |
+
+**Count nesting depth:**
+
+```clojure
+;; DEPTH 1: Top level
+(defn f []
+  ;; DEPTH 2: In let
+  (let [x ...]
+    ;; DEPTH 3: In nested let
+    (let [y ...]
+      ;; DEPTH 4: In map function
+      (map (fn [item]
+             ;; DEPTH 5: In map function body - PROBLEMATIC
+             ...)
+           items))))
+
+;; DEPTH ANALYSIS:
+;; Depth 2: Acceptable - let binding
+;; Depth 3: Acceptable - nested let
+;; Depth 4: Acceptable - map function
+;; Depth 5: Red flag - too nested, extract helper
+```
+
+**Cyclomatic complexity:**
+
+```clojure
+;; COMPLEXITY 1
+(defn simple [x]
+  (+ x 1))
+
+;; COMPLEXITY 3 - if/else adds 2 paths
+(defn medium [x]
+  (if (> x 0)
+    (+ x 1)
+    (- x 1)))
+
+;; COMPLEXITY 5 - two if statements = 4 paths
+(defn complex [x y]
+  (if (> x 0)
+    (if (> y 0)
+      x
+      y)
+    0))
+
+;; RED FLAG: Complexity 8+, consider splitting
+(defn overly-complex [x y z]
+  (cond
+    (and (> x 0) (> y 0)) ...      ; Path 1
+    (and (> x 0) (< y 0)) ...      ; Path 2
+    (and (< x 0) (> y 0)) ...      ; Path 3
+    (and (< x 0) (< y 0)) ...      ; Path 4
+    (zero? z) ...                   ; Path 5
+    :else ...))                     ; Path 6
+```
+
+---
+
+## Decision Tree - When to Refactor
+
+```
+┌────────────────────────────────────────┐
+│ Is function > 80 LOC?                 │
+└────────────────────────────────────────┘
+         │
+         ├─ YES → Can I extract 2-3 helpers?
+         │         │
+         │         ├─ YES → Extract and test
+         │         │
+         │         └─ NO → Document why complex
+         │                 Ask user if refactoring needed
+         │
+         └─ NO → OK, commit
+
+┌────────────────────────────────────────┐
+│ Is namespace > 1500 LOC?              │
+└────────────────────────────────────────┘
+         │
+         ├─ YES → Does it solve 2+ problems?
+         │         │
+         │         ├─ YES → Split namespace
+         │         │
+         │         └─ NO → OK, if tightly related
+         │
+         └─ NO → OK, commit
+
+┌────────────────────────────────────────┐
+│ Does function have 3+ nested let?     │
+└────────────────────────────────────────┘
+         │
+         └─ YES → Can I use threading macro?
+                   │
+                   ├─ YES → Use -> or ->> to flatten
+                   │
+                   └─ NO → Extract helper functions
+```
+
+---
+
+## Tools & Metrics
+
+**Automated checks (clj-kondo):**
+
+```bash
+# Check for unused functions
+clj-kondo --lint src/ | grep "unused"
+
+# Check for reflection warnings (impacts performance)
+clj-kondo --lint src/ | grep "reflection"
+
+# Count functions in file
+grep -c "^(defn " src/mymodule.clj
+```
+
+**Manual metrics:**
+
+```bash
+# File size analysis
+wc -l src/**/*.clj | sort -n | tail -20
+
+# Functions per file
+for f in src/**/*.clj; do
+  count=$(grep -c "^(defn " "$f")
+  echo "$(basename $f): $count functions"
+done
+
+# Average LOC per function
+# Manual: (total LOC) / (function count)
+# Example: arrow_zset.clj = 3381 / 52 = 65 LOC/function average
+```
+
+---
+
+## Summary
+
+1. **Function size**: 10-40 LOC ideal, 40-80 acceptable, 80-150 review, 150+ red flag
+2. **Namespace size**: 200-400 ideal, 400-1000 acceptable, 1000-1500 review, 1500+ split
+3. **Multi-arity**: OK if total < 80 LOC
+4. **Let-binding depth**: Extract helpers if 3+ nested levels
+5. **Parameters**: Use maps/records if 5+
+6. **Complexity**: Refactor if 3+ independent jobs or 3+ nested controls
+7. **Variables**: Avoid reassigning same variable (reuse suggests multiple jobs)
+8. **Nesting**: Extract helpers for depth > 4
+9. **Split namespaces** when they solve multiple problems or exceed 1500 LOC
+10. **Use threading macros** to reduce nesting and improve readability
+
+---
+
+## File Extension Naming: No .cljs/.cljc Overlap
+
+**`.cljs` and `.cljc` files must never share the same namespace.**
+
+In ClojureScript (shadow-cljs), when both `foo.cljs` and `foo.cljc` exist for the same namespace, the `.cljs` file takes precedence and the `.cljc` is silently ignored. This means:
+
+- The `.cljs` cannot `require` the `.cljc` (they're the same namespace)
+- Code in the `.cljc` is unreachable from ClojureScript
+- JVM tests may load the `.cljc` while production loads the `.cljs`, creating divergent behavior
+
+**Pattern: Use a `-pure` suffix for cross-platform logic:**
+
+```clojure
+;; ✅ CORRECT - Separate namespaces
+;; src/myapp/component/kpi_pure.cljc  → myapp.component.kpi-pure (pure logic, JVM-testable)
+;; src/myapp/component/kpi.cljs       → myapp.component.kpi (requires kpi-pure, adds JS lifecycle)
+
+;; ❌ WRONG - Same namespace, different extensions
+;; src/myapp/component/kpi.cljc       → myapp.component.kpi
+;; src/myapp/component/kpi.cljs       → myapp.component.kpi  (shadows .cljc!)
+```
+
+---
+
+## Parinfer and Large File Editing
+
+**This project uses parinfer** to automatically balance brackets based on indentation.
+
+### How Parinfer Works
+
+- Parinfer reads indentation and SETS brackets accordingly
+- If you add code at different indentation level, parinfer will ADD/REMOVE brackets
+- Comments on the same line as `[` cause parinfer to close the bracket before the comment
+- The linter runs automatically after edits, triggering parinfer
+
+### Why Large File Edits Fail
+
+When editing deeply nested code in large files (>500 lines), the Edit tool often:
+1. Changes indentation levels inadvertently
+2. Triggers parinfer to rebalance brackets
+3. Corrupts the surrounding code structure
+4. Creates cascading syntax errors
+
+### Solution: Extract to Smaller Namespace
+
+When you encounter repeated bracket errors while editing a large file:
+
+1. **Extract the function** to a smaller, dedicated namespace
+2. **Follow LOC guidelines** above (Functions: 25-50 LOC, Namespaces: 300-500 LOC)
+3. **Require the extracted namespace** from the original location
+4. **Test in the new location** before integrating
+
+**Example - Extracting from compiled_plan.clj:**
+
+```clojure
+;; BAD: Trying to add if-let wrapper to 200-line let in compiled_plan.clj
+;; → Parinfer corrupts the file repeatedly
+
+;; GOOD: Extract to temporal_exists.clj
+(defn execute-temporal-exists-direct
+  "Direct execution path for temporal EXISTS patterns."
+  [execution-plan db sql-schema state]
+  (when-let [direct-result (compute-temporal-exists-result-directly
+                            execution-plan db sql-schema)]
+    {:delta direct-result :state state :new-state state}))
+
+;; Then in compiled_plan.clj, just call it:
+(or (temporal-exists/execute-temporal-exists-direct execution-plan db sql-schema state)
+    (let [...] ...))
+```
+
+### Red Flags That Require Extraction
+
+- File is >500 lines
+- Same function edited 3+ times with bracket errors
+- Let form has >10 bindings
+- Nested let/cond/if forms >3 levels deep
+
+### Parenthesis Repair Tool
+
+**NEVER manually repair parenthesis errors.** Use automated tool:
+
+```bash
+clj-paren-repair path/to/file.clj
+```
+
+**Tool behavior:**
+- Automatically identifies and fixes unbalanced parentheses/delimiters
+- Runs `cljfmt` formatting on all processed files
+- If tool fails, report to user that manual fix is needed
+
+**When to use:**
+- Unbalanced parentheses errors after editing
+- Mismatched delimiters (parens, brackets, braces)
+- Compilation errors related to delimiter syntax
+
+**When NOT to use:**
+- Logical/semantic errors (use debugging instead)
+- Performance issues (use profiling instead)
+- Files that are not Clojure code
+
+---
+
+**See also:**
+- [FUNCTIONAL-PRINCIPLES.md](./FUNCTIONAL-PRINCIPLES.md) - Pure functions, composition patterns
+- [COLLECTION-PATTERNS.md](./COLLECTION-PATTERNS.md) - Transducer patterns for clean data flow
+- Main [SKILL.md](./SKILL.md) - Unified quality standards
+- **token-efficiency** skill - Efficient editing patterns
