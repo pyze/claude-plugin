@@ -1,0 +1,110 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "EnterPlanMode",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/scripts/pdca-plan-on-enter-plan-mode.sh"
+          }
+        ]
+      },
+      {
+        "matcher": "ExitPlanMode",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/scripts/plan-principles-check.sh"
+          }
+        ]
+      },
+      {
+        "matcher": "Bash|Task|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if [ -f \"$CLAUDE_PROJECT_DIR/.claude/issue-stack.md\" ]; then echo 'Current issue stack:'; grep '^- ' \"$CLAUDE_PROJECT_DIR/.claude/issue-stack.md\" | head -5; fi"
+          }
+        ]
+      },
+      {
+        "matcher": "Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/scripts/block-local-plans.sh"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if echo \"$CLAUDE_TOOL_INPUT\" | grep -q 'git commit'; then echo 'Reminder: update .claude/issue-stack.md and the active GitHub issue with progress.'; fi"
+          }
+        ]
+      },
+      {
+        "matcher": "Task",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "STACK=\"$CLAUDE_PROJECT_DIR/.claude/issue-stack.md\"; if [ ! -f \"$STACK\" ]; then exit 0; fi; ISSUE=$(grep '^- #' \"$STACK\" | head -1 | grep -o '#[0-9]*' | tr -d '#'); if [ -z \"$ISSUE\" ]; then exit 0; fi; LABELS=$(gh issue view \"$ISSUE\" --json labels -q '.labels[].name' 2>/dev/null); if echo \"$LABELS\" | grep -q 'pdca:do'; then echo \"Sub-agent task completed during Do phase (#$ISSUE). Check: are all plan checkboxes complete? If yes, transition to Check phase: gh issue edit $ISSUE --remove-label pdca:do --add-label pdca:check\"; fi"
+          }
+        ]
+      }
+    ],
+    "Notification": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if [ -f \"$CLAUDE_PROJECT_DIR/.claude/issue-stack.md\" ]; then grep '^- ' \"$CLAUDE_PROJECT_DIR/.claude/issue-stack.md\" | head -5 | sed 's/- //g' | paste -sd ' → ' -; fi"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "STACK=\"$CLAUDE_PROJECT_DIR/.claude/issue-stack.md\"; if [ ! -f \"$STACK\" ]; then exit 0; fi; ISSUE=$(grep '^- #' \"$STACK\" | head -1 | grep -o '#[0-9]*' | tr -d '#'); if [ -z \"$ISSUE\" ]; then exit 0; fi; LABELS=$(gh issue view \"$ISSUE\" --json labels -q '.labels[].name' 2>/dev/null); if echo \"$LABELS\" | grep -q 'pdca:do'; then echo \"PDCA: issue #$ISSUE is in Do phase. Check if all plan checkboxes are complete. If yes, transition to Check: gh issue edit $ISSUE --remove-label pdca:do --add-label pdca:check\"; elif echo \"$LABELS\" | grep -q 'pdca:check'; then echo \"PDCA: issue #$ISSUE is in Check phase. Present the gap analysis to the user and transition to React.\"; elif echo \"$LABELS\" | grep -q 'pdca:react'; then echo \"PDCA: issue #$ISSUE is in React phase. Ensure the user has responded to the gap analysis.\"; fi"
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/scripts/mementum-session-start.sh"
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if [ -f \"$CLAUDE_PROJECT_DIR/.claude/issue-stack.md\" ] && grep -q '^- ' \"$CLAUDE_PROJECT_DIR/.claude/issue-stack.md\"; then echo '=== Current Issue Stack ==='; grep '^- ' \"$CLAUDE_PROJECT_DIR/.claude/issue-stack.md\" | head -5; echo ''; echo 'Read the top issue via GitHub MCP before proceeding.'; else echo 'No active issues. Stack is empty.'; fi"
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/scripts/mementum-session-end.sh"
+          }
+        ]
+      }
+    ]
+  }
+}
