@@ -8,6 +8,7 @@ Uses clj-kondo for static analysis and identifies:
 - **Violation of functional programming principles** - Unnecessary mutations, missing pure function patterns
 - **Code duplication and abstraction opportunities** - Repeated patterns that could be extracted
 - **Test code that could be simplified** - Verbose test fixtures or redundant assertions
+- **Tests bypassing public API** - Test helpers using private functions or different execution paths than production code
 - **Performance anti-patterns** - Inefficient operations, unnecessary allocations, reflection warnings
 
 ## How It Works
@@ -35,6 +36,7 @@ The command will:
 ## Priority Levels
 
 **High Priority:**
+- Tests bypassing public API (tests must exercise production code paths)
 - Reflection warnings (can impact performance significantly)
 - Unsafe resource handling
 - Critical pattern violations
@@ -71,6 +73,23 @@ clj-kondo --lint src --config '{:linters {:unused-binding {:level :warning}}}'
 - Functions > 30 lines
 - Functions with > 4 parameters
 - Deeply nested conditionals (> 3 levels)
+
+### Tests Bypassing Public API
+Tests should exercise the same code paths as production. Flag:
+- Test helpers that call private functions (`#'ns/private-fn` or `defn-` accessed via var)
+- Test helpers using a different execution engine than production (e.g., `query-task` in tests vs `collect-emissions` in production)
+- Tests that mock internals instead of testing through the public API
+- Test fixtures that duplicate production logic instead of calling it
+
+```clojure
+;; WRONG - test helper uses different execution path than production
+(defn run-compiled [env entity query]
+  (ceql/query-task env entity query))  ;; production uses pipeline/run
+
+;; CORRECT - test helper calls production code
+(defn run-compiled [tree registry entity query]
+  (pipeline/run {:tree tree :registry registry :entity entity :output-keys query}))
+```
 
 ### Duplication Detection
 - Similar function bodies across files
