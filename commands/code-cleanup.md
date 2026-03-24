@@ -37,6 +37,7 @@ The command will:
 
 **High Priority:**
 - Tests bypassing public API (tests must exercise production code paths)
+- Unapproved `requiring-resolve` usage (lazy loading must be explicitly justified)
 - Reflection warnings (can impact performance significantly)
 - Unsafe resource handling
 - Critical pattern violations
@@ -89,6 +90,27 @@ Tests should exercise the same code paths as production. Flag:
 ;; CORRECT - test helper calls production code
 (defn run-compiled [tree registry entity query]
   (pipeline/run {:tree tree :registry registry :entity entity :output-keys query}))
+```
+
+### Unapproved requiring-resolve
+`requiring-resolve` defers namespace loading to runtime, hiding dependencies and making code harder to reason about. Every use must be explicitly approved by the user with a justifying comment.
+
+```bash
+# Find all requiring-resolve usages
+grep -rn 'requiring-resolve' src/ test/
+```
+
+Flag any occurrence that does not have an adjacent comment explaining why lazy loading is necessary. Legitimate uses include breaking circular dependencies and optional feature loading.
+
+```clojure
+;; WRONG - no justification
+(let [f (requiring-resolve 'some.ns/fn)]
+  (f args))
+
+;; CORRECT - justified and approved
+;; requiring-resolve: breaks circular dep between pipeline and checkpoint
+(let [f (requiring-resolve 'wemble.checkpoint/load-checkpoint)]
+  (f dir key))
 ```
 
 ### Duplication Detection
