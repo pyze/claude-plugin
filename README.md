@@ -60,6 +60,7 @@ Or add to your project's `.claude/settings.json`:
 |-------|-------------|
 | `learning-capture` | When and where to persist learnings (auto-memory vs skills vs CLAUDE.md) |
 | `repl-semantic-search` | REPL introspection as semantic search over Clojure codebases |
+| `rewrite-clj-transforms` | Structural code modification via bb + rewrite-clj (ns requires, EDN updates, bulk transforms) |
 
 ### Library-Specific Skills (v3.0)
 | Skill | Description |

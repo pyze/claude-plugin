@@ -498,3 +498,4 @@ clj-paren-repair path/to/file.clj
 - [COLLECTION-PATTERNS.md](./COLLECTION-PATTERNS.md) - Transducer patterns for clean data flow
 - Main [SKILL.md](./SKILL.md) - Unified quality standards
 - **token-efficiency** skill - Efficient editing patterns
+- [rewrite-clj-transforms](../rewrite-clj-transforms/) - Structural code modification via bb + rewrite-clj
