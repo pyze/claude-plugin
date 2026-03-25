@@ -104,6 +104,37 @@ Before committing documentation changes:
 | **Accuracy** | Tested code examples, correct syntax | Pseudocode as real code, "might work" |
 | **Completeness** | Prerequisites, outcomes, gotchas | Assuming knowledge, skipping error cases |
 
+## Issue Authoring
+
+**Issue body = problem, not solution.**
+
+The issue body describes *what's wrong*. Solution ideas, feature requests, and implementation plans go in **comments** after the issue is created.
+
+| Content | Issue body | Comments |
+|---------|:---:|:---:|
+| Problem statement | ✅ | |
+| Minimal repro case | ✅ | |
+| Impact (who, how often, severity) | ✅ | |
+| Solution ideas | | ✅ |
+| Feature requests | | ✅ |
+| Implementation plans / task lists | | ✅ |
+
+**Why:** Separating problem from solution prevents anchoring on a particular approach before the problem is fully understood. Solutions can evolve in comments without rewriting the issue.
+
+**Template:**
+```markdown
+## Problem
+[Observable behavior vs expected behavior]
+
+## Repro (if applicable)
+[Minimal code, steps, or failing test]
+
+## Impact
+[Who's affected, how often, severity]
+```
+
+---
+
 ## Templates
 
 ### New Skill
