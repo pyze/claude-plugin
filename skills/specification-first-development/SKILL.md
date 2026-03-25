@@ -19,7 +19,8 @@ This skill covers: **When/what to specify** - deciding if specs are needed, how 
 
 **Use DIFFERENT skill if:**
 - Where to store documentation → [documentation-maintenance](../documentation-maintenance/)
-- Recording discoveries → use your project's memory system (memories/)
+- Recording discoveries → [learning-capture](../learning-capture/)
+- Converting spec examples to tests → [bdd-scenarios](../bdd-scenarios/)
 
 ## When to Use This Skill
 

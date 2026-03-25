@@ -14,6 +14,7 @@ This skill covers: **Converting specification examples into executable behaviora
 **Use DIFFERENT skill if:**
 - TDD red-green-refactor workflow → `superpowers:test-driven-development`
 - Writing specifications → [specification-first-development](../specification-first-development/)
+- This skill typically follows [specification-first-development](../specification-first-development/) — write specs first, then convert examples to BDD scenarios
 
 ## When to Use This Skill
 
