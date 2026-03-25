@@ -43,7 +43,7 @@ Or add to your project's `.claude/settings.json`:
 ### Development Workflow
 | Skill | Description |
 |-------|-------------|
-| `repl-driven-development` | 13-phase methodology, REPL exploration + TDD implementation |
+| `repl-driven-development` | REPL exploration + TDD implementation (compressed 5-phase default, full 13-phase for complex features) |
 | `clojure-mcp-repl` | clojure_eval MCP tool mechanics, nREPL connection, system management |
 | `specification-first-development` | Specifications before code, 4-phase workflow |
 | `bdd-scenarios` | Given/When/Then scenarios in clojure.test |
@@ -55,10 +55,11 @@ Or add to your project's `.claude/settings.json`:
 | `pr-document` | PR template co-authoring, review dimensions |
 | `nucleus-notation` | Mathematical prompting framework for compressed AI directives |
 
-### Memory & Workflow (v2.0)
+### Learning & Search
 | Skill | Description |
 |-------|-------------|
-| `mementum` | Git-based memory system for persistent learning across sessions |
+| `learning-capture` | When and where to persist learnings (auto-memory vs skills vs CLAUDE.md) |
+| `repl-semantic-search` | REPL introspection as semantic search over Clojure codebases |
 
 ### Library-Specific Skills (v3.0)
 | Skill | Description |
@@ -93,9 +94,7 @@ The plugin provides hooks for PDCA workflow automation:
 | PDCA phase transition | `PostToolUse:Task` | Prompt Check phase when Do tasks complete |
 | Issue stack on notification | `Notification` | Show issue stack breadcrumb |
 | PDCA stop check | `Stop` | Check PDCA phase and prompt next action |
-| Mementum session start | `SessionStart` | Load recent memories into context |
 | Issue stack on start | `SessionStart` | Show current issue stack at session start |
-| Mementum session end | `SessionEnd` | Remind about memory creation |
 
 ## Agents (v2.0)
 
@@ -109,17 +108,14 @@ The plugin provides hooks for PDCA workflow automation:
 |--------|---------|
 | `pdca-plan-on-enter-plan-mode.sh` | PDCA label transition + plan mode reminder |
 | `plan-principles-check.sh` | Principles review before plan finalization |
-| `mementum-session-start.sh` | Load recent memories at session start |
-| `mementum-session-end.sh` | Memory creation reminder at session end |
 | `block-local-plans.sh` | Prevent local plan file creation |
 | `decomplection-review.sh` | Gate plan exit with decomplection checklist |
 
 ## Project Setup Requirements
 
-Projects using the workflow features (PDCA, issue stack, mementum) should create:
+Projects using the workflow features (PDCA, issue stack) should create:
 
 - `.claude/issue-stack.md` — Issue stack file (empty or with initial issues)
-- `memories/` directory — For mementum memories (git-tracked)
 
 ## Contributing
 

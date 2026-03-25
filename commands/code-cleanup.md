@@ -258,6 +258,19 @@ After all agents complete:
    - "Test quality issues" (if any)
    - "Code duplication" (if any)
 5. **Skip empty categories** — don't create issues for categories with zero findings
+6. **Flag recurring patterns** — if any single violation type appears in 3+ files,
+   append to the GitHub issue:
+
+   > **Recurring pattern detected:** [violation] appears in N files. Consider running
+   > `/five-whys` to determine if a skill or CLAUDE.md update would prevent this.
+   > Relevant skill: [skill-name].
+
+   Violation → skill mapping:
+   - Scattered defaults → `clojure-coding-standards` (FUNCTIONAL-PRINCIPLES.md)
+   - Collection anti-patterns → `clojure-coding-standards` (COLLECTION-PATTERNS.md)
+   - Unapproved mutations → `clojure-coding-standards` (SKILL.md)
+   - Function size → `clojure-coding-standards` (CODE-ORGANIZATION.md)
+   - Tests bypassing API → `bdd-scenarios` or project CLAUDE.md
 
 Issue format:
 ```markdown

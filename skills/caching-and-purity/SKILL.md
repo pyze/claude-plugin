@@ -1,6 +1,6 @@
 ---
 name: caching-and-purity
-description: Reason correctly about caching and referential transparency. Use when diagnosing stale cache results, deciding whether to cache a function, or evaluating whether a function is pure.
+description: Reason correctly about caching and referential transparency. Use when deciding whether to add caching, evaluating function purity for cacheability, diagnosing stale cache results, or understanding why a cached function returns wrong data.
 ---
 
 # Caching and Purity

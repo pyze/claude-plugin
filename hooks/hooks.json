@@ -45,6 +45,15 @@
             "command": "${CLAUDE_PLUGIN_ROOT}/scripts/block-local-plans.sh"
           }
         ]
+      },
+      {
+        "matcher": "Grep",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if [ -f \"$CLAUDE_PROJECT_DIR/.nrepl-port\" ]; then echo 'Tip: For structural queries (namespace contents, resolver relationships, attribute reachability), consider using the REPL first. See repl-semantic-search skill.'; fi"
+          }
+        ]
       }
     ],
     "PostToolUse": [
@@ -63,6 +72,15 @@
           {
             "type": "command",
             "command": "STACK=\"$CLAUDE_PROJECT_DIR/.claude/issue-stack.md\"; if [ ! -f \"$STACK\" ]; then exit 0; fi; ISSUE=$(grep '^- #' \"$STACK\" | head -1 | grep -o '#[0-9]*' | tr -d '#'); if [ -z \"$ISSUE\" ]; then exit 0; fi; LABELS=$(gh issue view \"$ISSUE\" --json labels -q '.labels[].name' 2>/dev/null); if echo \"$LABELS\" | grep -q 'pdca:do'; then echo \"Sub-agent task completed during Do phase (#$ISSUE). Check: are all plan checkboxes complete? If yes, transition to Check phase: gh issue edit $ISSUE --remove-label pdca:do --add-label pdca:check\"; fi"
+          }
+        ]
+      },
+      {
+        "matcher": "Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if echo \"$CLAUDE_TOOL_INPUT\" | grep -qE '\\(atom |\\(volatile! |\\(ref |\\(agent |\\(defonce '; then if ! echo \"$CLAUDE_TOOL_INPUT\" | grep -qi 'APPROVED'; then echo 'WARNING: Mutable state introduced without approval comment. Per clojure-coding-standards, atom/volatile!/ref/agent require explicit user approval. Add a MUTATION APPROVED comment or ask the user.'; fi; fi"
           }
         ]
       }
@@ -92,25 +110,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/scripts/mementum-session-start.sh"
-          }
-        ]
-      },
-      {
-        "hooks": [
-          {
-            "type": "command",
             "command": "if [ -f \"$CLAUDE_PROJECT_DIR/.claude/issue-stack.md\" ] && grep -q '^- ' \"$CLAUDE_PROJECT_DIR/.claude/issue-stack.md\"; then echo '=== Current Issue Stack ==='; grep '^- ' \"$CLAUDE_PROJECT_DIR/.claude/issue-stack.md\" | head -5; echo ''; echo 'Read the top issue via GitHub MCP before proceeding.'; else echo 'No active issues. Stack is empty.'; fi"
-          }
-        ]
-      }
-    ],
-    "SessionEnd": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/scripts/mementum-session-end.sh"
           }
         ]
       }
