@@ -245,7 +245,8 @@ Contract tests > Implementation-specific tests
 
 1. **Immutability by default** - Mutation requires approval
 2. **Pure functions** - Deterministic, side-effect free (mark impure with `!`)
-3. **Bang suffix** - `!` = side effect, no `!` = pure (functions and effect keywords)
+3. **Defaults at edges** - Resolve defaults at system boundaries, not in inner functions
+4. **Bang suffix** - `!` = side effect, no `!` = pure (functions and effect keywords)
 4. **State-based coordination** - Prefer semantic state over timing mechanisms
 5. **Composition** - Build with functions/protocols, not inheritance
 6. **Declarative style** - Express WHAT, not HOW; use transducers for collections
@@ -296,11 +297,12 @@ Contract tests > Implementation-specific tests
 1. **Immutability by default** - Mutation needs approval + documentation
 2. **Delete dead code** - Unused functions, vars, redundant tests
 3. **Pure functions** - Mark side effects with `!` suffix
-4. **Use transducers** - `into` with `comp` for collections
-5. **Preserve exceptions** - Never transmute except at API boundaries
-6. **Size guidelines** - Functions 10-40 LOC, namespaces 200-400 LOC
-7. **Ask for approval** - Mutations, lazy evaluation deviations, performance trade-offs
-8. **Document deviations** - Include approval date, rationale, benchmark ID
+4. **Defaults at edges** - Resolve defaults at system boundaries, not in inner functions
+5. **Use transducers** - `into` with `comp` for collections
+6. **Preserve exceptions** - Never transmute except at API boundaries
+7. **Size guidelines** - Functions 10-40 LOC, namespaces 200-400 LOC
+8. **Ask for approval** - Mutations, lazy evaluation deviations, performance trade-offs
+9. **Document deviations** - Include approval date, rationale, benchmark ID
 
 **For detailed guidance, see:**
 - [FUNCTIONAL-PRINCIPLES.md](./FUNCTIONAL-PRINCIPLES.md)
