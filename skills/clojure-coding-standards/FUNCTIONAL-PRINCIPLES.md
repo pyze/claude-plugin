@@ -77,6 +77,51 @@ Core functional programming patterns for Clojure code.
 
 ---
 
+## Defaults at the Edges
+
+**Resolve default values at system boundaries so inner functions receive fully-specified data.**
+
+Inner functions should not compute, check for, or apply defaults. When defaults are scattered throughout the call stack, every function must handle "what if this key is missing?" — adding conditional branches, coupling to configuration knowledge, and making functions harder to test.
+
+```clojure
+;; ❌ WRONG - Defaults scattered through inner functions
+(defn build-chart [config]
+  (let [width  (or (:width config) 800)        ; Default here
+        height (or (:height config) 600)]       ; Default here
+    (render-axes {:width width :height height})))
+
+(defn render-axes [{:keys [width height margin]}]
+  (let [margin (or margin 20)]                   ; And here too
+    ...))
+
+;; ✅ CORRECT - Defaults resolved once at the edge
+(def chart-defaults {:width 800 :height 600 :margin 20})
+
+(defn create-chart [user-config]          ; Edge function
+  (let [config (merge chart-defaults user-config)]
+    (build-chart config)))                ; Inner functions receive complete data
+
+(defn build-chart [{:keys [width height]}]  ; No defaults needed
+  (render-axes {:width width :height height}))
+
+(defn render-axes [{:keys [margin]}]        ; No defaults needed
+  ...)
+```
+
+**Where to apply defaults:**
+- Public API entry points
+- Configuration loading / system startup
+- HTTP handler parameter parsing
+- CLI argument processing
+
+**Why:**
+- Inner functions stay pure and simple — no conditional branches for missing values
+- Defaults are documented in one place, not discovered by reading the call stack
+- Testing inner functions requires no setup for "what if the key is absent?"
+- Changing a default is a one-line edit at the edge, not a grep-and-replace
+
+---
+
 ## Bang Suffix Convention
 
 **Symbols ending with `!` indicate state-affecting operations.**
@@ -458,14 +503,15 @@ The `instance?` anti-pattern creates brittle code that's hard to refactor:
 
 1. **Immutability**: Required by default, mutation needs approval
 2. **Purity**: Pure by default, mark side effects with `!`
-3. **Composition**: Build with functions and protocols, not inheritance
-4. **Declarative**: Express intent with ->, ->>, map, filter, reduce (or transducers)
-5. **Point-free**: Use when clear, avoid when duplicating calls
-6. **Higher-Order**: Abstract patterns with functions that take/return functions
-7. **Destructuring**: Extract data declaratively
-8. **Preserve exceptions**: Never transmute except at API boundaries
-9. **Wrap, don't replace**: Use ex-info to add context while preserving cause
-10. **Data-Oriented**: Plain maps/vectors over objects with methods
+3. **Defaults at edges**: Resolve defaults at system boundaries, not in inner functions
+4. **Composition**: Build with functions and protocols, not inheritance
+5. **Declarative**: Express intent with ->, ->>, map, filter, reduce (or transducers)
+6. **Point-free**: Use when clear, avoid when duplicating calls
+7. **Higher-Order**: Abstract patterns with functions that take/return functions
+8. **Destructuring**: Extract data declaratively
+9. **Preserve exceptions**: Never transmute except at API boundaries
+10. **Wrap, don't replace**: Use ex-info to add context while preserving cause
+11. **Data-Oriented**: Plain maps/vectors over objects with methods
 
 **See also:**
 - [COLLECTION-PATTERNS.md](./COLLECTION-PATTERNS.md) - Transducer patterns for collections
