@@ -67,6 +67,15 @@
         ]
       },
       {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if echo \"$CLAUDE_TOOL_INPUT\" | grep -q 'gh issue create'; then echo 'Reminder: Issue body = problem statement + repro case. Post solution ideas and implementation plans as comments after creation.'; fi"
+          }
+        ]
+      },
+      {
         "matcher": "Task",
         "hooks": [
           {
