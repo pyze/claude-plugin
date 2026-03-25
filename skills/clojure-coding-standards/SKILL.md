@@ -247,10 +247,10 @@ Contract tests > Implementation-specific tests
 2. **Pure functions** - Deterministic, side-effect free (mark impure with `!`)
 3. **Defaults at edges** - Resolve defaults at system boundaries, not in inner functions
 4. **Bang suffix** - `!` = side effect, no `!` = pure (functions and effect keywords)
-4. **State-based coordination** - Prefer semantic state over timing mechanisms
-5. **Composition** - Build with functions/protocols, not inheritance
-6. **Declarative style** - Express WHAT, not HOW; use transducers for collections
-7. **Error handling** - See [error-handling-patterns](../error-handling-patterns/) for complete guidance
+5. **State-based coordination** - Prefer semantic state over timing mechanisms
+6. **Composition** - Build with functions/protocols, not inheritance
+7. **Declarative style** - Express WHAT, not HOW; use transducers for collections
+8. **Error handling** - See [error-handling-patterns](../error-handling-patterns/) for complete guidance
 
 ### Code Organization (see CODE-ORGANIZATION.md)
 
