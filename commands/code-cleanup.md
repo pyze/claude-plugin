@@ -301,8 +301,15 @@ To add a new analysis concern, add a new agent section above. Each agent must:
 3. Return findings as structured data (not prose)
 4. Never create GitHub issues directly
 
+## Auto-Fix Scripts
+
+Agents can optionally produce bb + rewrite-clj scripts that fix violations, not just report them. See [rewrite-clj-transforms](../skills/rewrite-clj-transforms/) for the recipe library.
+
+When an agent produces a fix script, the orchestrator includes it in the GitHub issue for user approval before running. Fix scripts should be self-contained bb scripts that can be run with `bb fix-script.clj`.
+
 ## Related Skills
 
 - `clojure-coding-standards` — The standards these agents enforce
+- `rewrite-clj-transforms` — Structural code modification for auto-fix scripts
 - `error-handling-patterns` — Error handling best practices
 - `integrant-lifecycle` — Service lifecycle patterns
