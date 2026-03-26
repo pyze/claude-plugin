@@ -131,6 +131,7 @@ The plugin provides automation hooks for PDCA transitions:
 | `pdca-plan-on-enter-plan-mode.sh` | PreToolUse:EnterPlanMode | Transitions label to `pdca:plan` |
 | `plan-principles-check.sh` | PreToolUse:ExitPlanMode | Validates plan principles |
 | `decomplection-review.sh` | PreToolUse:ExitPlanMode | Gates exit with decomplection checklist |
+| `derisk-on-exit-plan.sh` | PreToolUse:ExitPlanMode | Loops /derisk until all risks are LOW |
 | PostToolUse:Task | PostToolUse:Task | Prompts Check phase when Do tasks complete |
 | Stop | Stop | Checks PDCA phase and prompts next action |
 

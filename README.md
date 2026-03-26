@@ -90,6 +90,7 @@ The plugin provides hooks for PDCA workflow automation:
 | PDCA plan transition | `PreToolUse:EnterPlanMode` | Transition issue to `pdca:plan`, print PDCA reminder |
 | Principles check | `PreToolUse:ExitPlanMode` | Validate plan against project principles before execution |
 | Decomplection review | `PreToolUse:ExitPlanMode` | Gate plan finalization with decomplection checklist |
+| Derisk gate | `PreToolUse:ExitPlanMode` | Loop /derisk until all risks are LOW before execution |
 | Block local plans | `PreToolUse:Write` | Prevent creating local plan files (forces GitHub Issues) |
 | Issue stack display | `PreToolUse:Bash\|Task\|Edit` | Show current issue stack context |
 | Git commit reminder | `PostToolUse:Bash` | Remind to update issue stack on commit |

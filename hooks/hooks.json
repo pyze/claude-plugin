@@ -29,6 +29,15 @@
         ]
       },
       {
+        "matcher": "ExitPlanMode",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/scripts/derisk-on-exit-plan.sh"
+          }
+        ]
+      },
+      {
         "matcher": "Bash|Task|Edit",
         "hooks": [
           {
