@@ -52,6 +52,7 @@ Or add to your project's `.claude/settings.json`:
 ### Design & Process
 | Skill | Description |
 |-------|-------------|
+| `pdca-cycle` | Plan-Do-Check-React loop for complex work — phase transitions, gap analysis, lessons learned |
 | `pr-document` | PR template co-authoring, review dimensions |
 | `nucleus-notation` | Mathematical prompting framework for compressed AI directives |
 
