@@ -134,6 +134,8 @@ App initialization is inherently browser-specific. Use `.cljs`.
 
 ## Reader Conditionals
 
+**Minimize reader conditional usage.** Structure files so `.cljc` code is pure and platform-free. See [CODE-ORGANIZATION.md — Minimize Reader Conditionals](../clojure-coding-standards/CODE-ORGANIZATION.md) for strategies.
+
 When you must use reader conditionals, follow these patterns:
 
 ### Imports

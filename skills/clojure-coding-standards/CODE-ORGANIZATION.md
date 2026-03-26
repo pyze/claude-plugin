@@ -387,6 +387,55 @@ done
 8. **Nesting**: Extract helpers for depth > 4
 9. **Split namespaces** when they solve multiple problems or exceed 1500 LOC
 10. **Use threading macros** to reduce nesting and improve readability
+11. **Minimize reader conditionals** — isolate platform code in dedicated files, keep `.cljc` pure
+
+---
+
+## Minimize Reader Conditionals
+
+**Structure files so reader conditionals (`#?`) are rare or absent.**
+
+Reader conditionals add cognitive load — every `#?(:clj ... :cljs ...)` is a hidden branch that doubles the code paths to reason about. Instead of sprinkling reader conditionals through a file, isolate platform-specific code into dedicated files.
+
+```clojure
+;; ❌ WRONG - Reader conditionals scattered through business logic
+(defn resolve-data [env query]
+  (let [result (execute-query env query)
+        formatted #?(:clj  (format-jvm result)
+                     :cljs (format-browser result))]
+    #?(:clj  (log/info "Resolved" (count result) "rows")
+       :cljs (js/console.log "Resolved" (count result) "rows"))
+    formatted))
+
+;; ✅ CORRECT - Pure logic in .cljc, platform code in .clj/.cljs
+;; resolve.cljc (no reader conditionals)
+(defn resolve-data [env query format-fn log-fn]
+  (let [result (execute-query env query)
+        formatted (format-fn result)]
+    (log-fn "Resolved" (count result) "rows")
+    formatted))
+
+;; resolve_jvm.clj
+(defn resolve-data-jvm [env query]
+  (resolve/resolve-data env query format-jvm #(log/info %&)))
+
+;; resolve_browser.cljs
+(defn resolve-data-browser [env query]
+  (resolve/resolve-data env query format-browser js/console.log))
+```
+
+**Acceptable uses of reader conditionals:**
+- Namespace `:import` / `:require` blocks (unavoidable)
+- Thin adapter functions whose entire purpose is platform bridging
+- Constants that differ by platform (e.g., line separator)
+
+**Strategies to eliminate reader conditionals:**
+1. **Push platform code to the edges** — pure `.cljc` core, thin `.clj`/`.cljs` wrappers
+2. **Pass platform functions as arguments** — inject `format-fn`, `log-fn`, etc.
+3. **Use protocols** — define a protocol in `.cljc`, implement in `.clj`/`.cljs`
+4. **Use the `-pure` suffix convention** — `kpi_pure.cljc` (logic) + `kpi.cljs` (lifecycle)
+
+See also: [clojurescript-cross-platform-code](../clojurescript-cross-platform-code/) for file extension decisions and JVM TDD patterns.
 
 ---
 
