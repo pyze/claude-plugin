@@ -113,6 +113,28 @@ The plugin provides hooks for PDCA workflow automation:
 | `plan-principles-check.sh` | Principles review before plan finalization |
 | `block-local-plans.sh` | Prevent local plan file creation |
 | `decomplection-review.sh` | Gate plan exit with decomplection checklist |
+| `derisk-on-exit-plan.sh` | Loop /derisk until all risks are LOW before execution |
+| `statusline.sh` | Status line showing issue stack, PDCA phase, model, context % |
+
+## Status Line
+
+The plugin ships a status line script. To enable, add to your project or user `settings.json`:
+
+```json
+{
+  "statusLine": {
+    "type": "command",
+    "command": "<path-to-plugin>/scripts/statusline.sh"
+  }
+}
+```
+
+**Displays:** `[Model] #52 (do) | 23% ctx | $1.45`
+
+- Current model name
+- Top issue from stack + PDCA phase
+- Context window usage
+- Session cost
 
 ## Project Setup Requirements
 
