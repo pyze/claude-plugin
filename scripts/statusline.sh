@@ -19,7 +19,7 @@ PCT=$(echo "$input" | jq -r '.context_window.used_percentage // 0' | cut -d. -f1
 ISSUE_INFO=""
 STACK_FILE="${CLAUDE_PROJECT_DIR:-.}/.claude/issue-stack.md"
 if [ -f "$STACK_FILE" ]; then
-  TOP=$(grep -E '^- #' "$STACK_FILE" | head -1)
+  TOP=$(grep -E '^- #' "$STACK_FILE" | head -1 || true)
   if [ -n "$TOP" ]; then
     # Extract: "- #52 — Fix auth (do)" → "#52 (do)"
     ISSUE_NUM=$(echo "$TOP" | grep -oE '#[0-9]+' | head -1)
