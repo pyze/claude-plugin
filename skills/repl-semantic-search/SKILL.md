@@ -27,6 +27,7 @@ The running REPL is the most accurate search tool for structural questions about
 | What does function Y accept? | **REPL** | `meta` gives arglists/docstring |
 | Where is the string `"foo-bar"` used? | **Grep** | Text matching across files |
 | Find all callers of `my-fn` | **LSP** | AST-aware reference search |
+| Count call sites for a refactor | **LSP** | `find_references` gives exact count without false positives from comments/strings |
 | Why is this code structured this way? | **Skills/docs** | Intent isn't introspectable |
 
 **Heuristic:** If the answer is a fact about loaded code (exists, signature, relationships), ask the REPL. If it's a text pattern or design rationale, use Grep/LSP/skills.

@@ -60,7 +60,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "if [ -f \"$CLAUDE_PROJECT_DIR/.nrepl-port\" ]; then echo 'Tip: For structural queries (namespace contents, resolver relationships, attribute reachability), consider using the REPL first. See repl-semantic-search skill.'; fi"
+            "command": "if [ -f \"$CLAUDE_PROJECT_DIR/.nrepl-port\" ]; then echo 'Tip: For structural queries (namespace contents, resolver relationships), consider the REPL. For finding call sites or counting references for a refactor, use LSP find_references instead of Grep.'; fi"
           }
         ]
       }
