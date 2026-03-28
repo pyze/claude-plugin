@@ -172,3 +172,52 @@ These require the `continuous-eql` library. Skip this section if the project doe
 ;; "Given :user/id is already known, what runs?"
 (ceql/explain-query env [:user/orders] {:entity {:user/id 1}})
 ```
+
+---
+
+## Dependency Topology
+
+Recipes for understanding namespace coupling and dependency health. Works in any Clojure project with loaded namespaces.
+
+### Circular namespace dependencies
+
+```clojure
+;; Find namespace pairs that require each other
+(for [ns (all-ns)
+      [_ req-ns] (ns-aliases ns)
+      :when (contains? (set (map val (ns-aliases req-ns)))
+                        (find-ns (ns-name ns)))]
+  [(ns-name ns) (ns-name req-ns)])
+```
+
+### Import hotspots (most-required namespaces)
+
+```clojure
+;; Top 10 namespaces by fan-in — highest blast radius if changed
+(->> (all-ns)
+     (mapcat (fn [ns] (map (comp ns-name val) (ns-aliases ns))))
+     frequencies
+     (sort-by val >)
+     (take 10))
+;; => ([clojure.string 42] [clojure.core 38] [my.app.db 15] ...)
+```
+
+### Orphan namespaces
+
+```clojure
+;; Loaded namespaces not required by any other namespace
+(let [required (set (mapcat (fn [ns] (map (comp ns-name val) (ns-aliases ns)))
+                            (all-ns)))]
+  (remove required (map ns-name (all-ns))))
+;; Candidates for deletion or missing require
+```
+
+### Namespace dependency count (fan-out)
+
+```clojure
+;; Namespaces with the most outgoing dependencies — tightly coupled
+(->> (all-ns)
+     (map (fn [ns] [(ns-name ns) (count (ns-aliases ns))]))
+     (sort-by second >)
+     (take 10))
+```

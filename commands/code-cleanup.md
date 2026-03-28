@@ -11,7 +11,8 @@ Analyze code for violations of Clojure best practices. Dispatches focused agents
     ├── Agent 2: Code Organization (structural)
     ├── Agent 3: Purity & Standards (functional principles)
     ├── Agent 4: Test Quality (test-specific)
-    └── Agent 5: Code Duplication (structural comparison)
+    ├── Agent 5: Code Duplication (structural comparison)
+    └── Agent 6: Dependency Topology (namespace coupling)
     │
     ▼
 Collect findings → Create GitHub issues by category
@@ -244,6 +245,43 @@ Return findings as a list of {file, line, pattern, violation, severity}.
 Do NOT create GitHub issues — just return findings.
 ```
 
+### Agent 6: Dependency Topology
+
+**Concern:** Namespace coupling and dependency health.
+**Detection method:** clj-kondo analysis + REPL namespace introspection.
+
+**Detects:**
+- Circular namespace dependencies
+- High fan-in namespaces (imported by 10+ others — high blast radius on change)
+- Orphan namespaces (not required by any other namespace)
+- High fan-out namespaces (require 10+ others — tightly coupled)
+
+**Instructions for agent:**
+
+```
+Analyze namespace dependency structure across src/ and test/.
+
+1. **Circular dependencies:** Run clj-kondo with circular-dependency linter enabled:
+   clj-kondo --lint src --config '{:linters {:namespace {:level :warning}}}'
+   Or at the REPL, check ns-aliases for bidirectional requires.
+   Flag each circular pair with both namespace names.
+
+2. **High fan-in (blast radius):** Count how many namespaces require each namespace.
+   Flag any namespace required by 10+ others. These are high-impact change targets
+   that need strong test coverage and stable APIs.
+
+3. **Orphan namespaces:** Find namespaces not required by any other namespace in
+   the project. Exclude entry points (main, init, test namespaces). Orphans are
+   candidates for deletion or indicate missing requires.
+
+4. **High fan-out (coupling):** Count how many namespaces each namespace requires.
+   Flag any namespace requiring 10+ others. These are tightly coupled and may need
+   splitting or interface extraction.
+
+Return findings as a list of {namespace, issue-type, detail, severity}.
+Do NOT create GitHub issues — just return findings.
+```
+
 ## Orchestrator Behavior
 
 After all agents complete:
@@ -257,6 +295,7 @@ After all agents complete:
    - "Functional purity violations" (if any)
    - "Test quality issues" (if any)
    - "Code duplication" (if any)
+   - "Dependency topology" (if any)
 5. **Skip empty categories** — don't create issues for categories with zero findings
 6. **Flag recurring patterns** — if any single violation type appears in 3+ files,
    append to the GitHub issue:
