@@ -385,9 +385,60 @@ done
 6. **Complexity**: Refactor if 3+ independent jobs or 3+ nested controls
 7. **Variables**: Avoid reassigning same variable (reuse suggests multiple jobs)
 8. **Nesting**: Extract helpers for depth > 4
-9. **Split namespaces** when they solve multiple problems or exceed 1500 LOC
-10. **Use threading macros** to reduce nesting and improve readability
-11. **Minimize reader conditionals** — isolate platform code in dedicated files, keep `.cljc` pure
+9. **Reduce nesting to reduce edit risk** — deeply nested s-expressions are fragile under non-structural edits
+10. **Split namespaces** when they solve multiple problems or exceed 1500 LOC
+11. **Use threading macros** to reduce nesting and improve readability
+12. **Minimize reader conditionals** — isolate platform code in dedicated files, keep `.cljc` pure
+
+---
+
+## Reduce Nesting to Reduce Edit Risk
+
+**As s-expressions nest deeper, non-structural edits become increasingly error-prone.**
+
+Text-based tools (sed, awk, the Edit tool, manual regex) operate on lines and character positions, not s-expression boundaries. At nesting depth 2-3, a misplaced paren is easy to spot. At depth 5+, matching parens span dozens of lines and a single deletion or insertion can silently unbalance the entire form.
+
+```clojure
+;; ❌ HIGH RISK — depth 6, fragile under text edits
+(defn process [env query]
+  (let [plan (compute-plan env query)]
+    (when-let [nodes (seq (:nodes plan))]
+      (reduce (fn [acc node]
+                (if (valid? node)
+                  (let [result (resolve-node env node)]
+                    (if (error? result)
+                      (assoc acc :errors
+                        (conj (:errors acc) result))  ;; depth 6 — which ) closes what?
+                      (update acc :results conj result)))
+                  acc))
+              {:results [] :errors []}
+              nodes))))
+
+;; ✅ LOW RISK — flat, each step is independently editable
+(defn resolve-node-result [env node]
+  (when (valid? node)
+    (resolve-node env node)))
+
+(defn accumulate-result [acc result]
+  (if (error? result)
+    (update acc :errors conj result)
+    (update acc :results conj result)))
+
+(defn process [env query]
+  (let [nodes (:nodes (compute-plan env query))]
+    (transduce (keep #(resolve-node-result env %))
+               (completing accumulate-result)
+               {:results [] :errors []}
+               nodes)))
+```
+
+**Strategies to reduce nesting:**
+1. **Extract named helpers** — each depth level becomes a named function
+2. **Use threading macros** — `->`, `->>`, `cond->` flatten conditional chains
+3. **Use transducers** — `transduce` replaces nested `reduce` + `if` + `let`
+4. **Early returns via `when-let`/`some->`** — avoid nesting `if` inside `let`
+
+**When nesting is unavoidable and edits are needed:** Use [rewrite-clj-transforms](../rewrite-clj-transforms/) via Babashka instead of text-based tools. rewrite-clj operates on the s-expression tree and cannot produce unbalanced parens.
 
 ---
 
