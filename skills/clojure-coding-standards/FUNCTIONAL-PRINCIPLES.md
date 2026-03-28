@@ -142,6 +142,22 @@ Inner functions should not compute, check for, or apply defaults. When defaults 
 - All pure functions MUST NOT use bang
 - Code review should catch violations
 
+**Common miss:** Functions that call `swap!`/`reset!` on atoms they create internally or receive as parameters. The function's *primary* purpose may be "return a flow" or "build a signal map," but if it mutates any atom, it has a side effect and needs `!`. Public API functions without `!` are **high priority** — callers assume no-bang functions are pure.
+
+```clojure
+;; ❌ WRONG — mutates caller's atom but name suggests pure
+(defn build-signal-graph [env order {:keys [instrument]}]
+  ;; ... builds sig-map ...
+  (reset! instrument counters)  ;; side effect!
+  sig-map)
+
+;; ✅ CORRECT — bang signals the mutation
+(defn build-signal-graph! [env order {:keys [instrument]}]
+  ;; ... builds sig-map ...
+  (reset! instrument counters)
+  sig-map)
+```
+
 ---
 
 ## State-Based Over Timing-Based

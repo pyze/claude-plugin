@@ -127,8 +127,14 @@ For each pattern, grep and then verify context (some patterns have legitimate us
 1. **Unapproved mutations:** Search for atom/volatile!/ref/agent. Check if adjacent
    lines contain "MUTATION APPROVED" or "APPROVED" comment. Flag those without.
 
-2. **Unapproved requiring-resolve:** Search for requiring-resolve in source files
+2. **Missing bang suffix:** Search for functions that call swap!/reset!/send/vreset!/vswap!
+   but whose defn name doesn't end with !. **Flag public functions as HIGH priority** —
+   callers assume no-bang functions are pure. Flag private functions as MEDIUM.
+   This includes functions that mutate atoms received as parameters or created internally.
+
+3. **Unapproved requiring-resolve:** Search for requiring-resolve in source files
    (not test/). Flag any without a justifying comment. Example:
+
 
    ;; WRONG - no justification
    (let [f (requiring-resolve 'some.ns/fn)] (f args))
@@ -137,24 +143,21 @@ For each pattern, grep and then verify context (some patterns have legitimate us
    ;; requiring-resolve: breaks circular dep between pipeline and checkpoint
    (let [f (requiring-resolve 'wemble.checkpoint/load-checkpoint)] (f dir key))
 
-3. **Scattered defaults:** Search for (or (:key ...) default-value) patterns in
+4. **Scattered defaults:** Search for (or (:key ...) default-value) patterns in
    function bodies. To distinguish edge vs inner functions: edge functions are
    typically public, named with prefixes like create-, init-, handle-, -handler,
    or are the first function in a call chain (called from routes/main). Inner
    functions are private (defn-) or called only by other functions in the same
    namespace. Only flag defaults in clearly inner functions — when uncertain, skip.
 
-4. **Hidden global state:** Search for @global-, @app-, deref of module-level vars
+5. **Hidden global state:** Search for @global-, @app-, deref of module-level vars
    inside function bodies (not at top level).
 
-5. **Collection anti-patterns:** Search for:
+6. **Collection anti-patterns:** Search for:
    - (doall (map ...))  or  (doall (filter ...))
    - (vec (map ...))
    - (->> coll (map ...) (filter ...))
    - (for [x coll ...] ...)
-
-6. **Missing bang suffix:** Search for functions that call swap!/reset!/send/jdbc
-   but whose defn name doesn't end with !.
 
 7. **Integrant lifecycle:** Search for ig/init-key defmethods. For each, verify a
    matching ig/halt-key! exists. Missing halt-key! means resources leak on system
