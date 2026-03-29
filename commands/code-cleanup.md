@@ -215,34 +215,99 @@ Do NOT create GitHub issues — just return findings.
 - Test helpers using different execution paths than production
 - Tests that mock internals instead of using the public API
 - Redundant test fixtures that duplicate production logic
+- Configuration divergence between test and production defaults
+- Manual construction of internal data structures
+- Test helper passthrough gaps (helpers that don't forward options to underlying API)
 
 **Instructions for agent:**
 
 ```
-Analyze test files in test/ for quality violations.
+Analyze test files in test/ for quality violations that cause tests to exercise
+different code paths than production. This is the most important test quality
+check — tests that pass but don't validate production behavior are worse than
+no tests at all.
 
 1. **Private var access:** Search for #' (var quote) in test files. Each occurrence
    is a test reaching into implementation details. Flag with the var being accessed.
+   Severity: HIGH — these tests bypass public API guards and test paths users never
+   exercise. If the internal changes but the public behavior stays the same, the
+   test breaks spuriously. Conversely, if the public behavior breaks but internals
+   still pass, the test misses the bug.
 
-2. **Execution path divergence:** Look for test helper functions that call different
-   functions than production code for the same operation. Example:
+2. **Configuration divergence:** Identify default configurations in production code
+   (look for `:or` defaults in destructuring, default plugin lists, default option
+   maps). Then search test code for places that override these defaults. Flag tests
+   that use different configurations than production defaults, unless the test is
+   explicitly testing the override behavior.
 
-   ;; WRONG - test helper uses different execution path than production
-   (defn run-compiled [env entity query]
-     (ceql/query-task env entity query))  ;; production uses pipeline/run
+   Examples of what to detect:
+   - Production defaults to plugins [A B] but test uses only [A]
+   - Production uses a specific merge strategy but test constructs data directly
+   - Test helper builds env/config differently than the public API would
 
-   ;; CORRECT - test helper calls production code
-   (defn run-compiled [tree registry entity query]
-     (pipeline/run {:tree tree :registry registry :entity entity :output-keys query}))
+   How to find production defaults:
+   - Search for :or clauses in public function destructuring
+   - Search for defn argument defaults
+   - Look at factory functions that build standard configurations
 
-   Compare test helpers against the public API of the module under test.
+   Severity: MEDIUM when test accidentally omits production defaults.
+   Severity: LOW when test intentionally tests a specific configuration.
 
-3. **Excessive mocking:** Search for with-redefs, with-bindings, and mock/stub
+3. **Manual construction of internal data structures:** Search test code for
+   hand-built maps that match internal data shapes produced by production code.
+   These become stale when internals change.
+
+   Examples of what to detect:
+   - Tests constructing error maps (e.g., {::error {:message "..."}}) instead of
+     letting the error-handling infrastructure produce them
+   - Tests building metadata maps that match internal emission/state shapes
+   - Tests constructing resolver configs or execution plans by hand
+
+   How to detect:
+   - Search for namespace-qualified keywords from the production namespace used
+     in test map literals (not in assertions, but as test input data)
+   - Compare test helper data shapes against what production functions return
+
+   Severity: MEDIUM — fragile coupling to internals.
+
+4. **Test helper passthrough gaps:** For each test helper function (defn/defn- in
+   test files), check whether it forwards all relevant options to the underlying
+   production API it wraps.
+
+   How to detect:
+   - Find test helpers that call production API functions
+   - Compare the helper's parameter set against the production function's options
+   - Flag helpers that destructure/extract some options but don't pass through
+     the rest (e.g., extracts :entity and :n but ignores :plugins)
+
+   Example:
+   ;; WRONG — helper extracts some opts but doesn't forward :plugins
+   (defn test-signal [resolvers query opts assertion-fn]
+     (let [env (pci/register resolvers)
+           n (:n opts 1)
+           flow (reactive-signal-eql env query)]  ;; opts NOT passed!
+       ...))
+
+   ;; CORRECT — forwards relevant opts
+   (defn test-signal [resolvers query opts assertion-fn]
+     (let [env (pci/register resolvers)
+           n (:n opts 1)
+           flow (reactive-signal-eql env query (select-keys opts [:plugins]))]
+       ...))
+
+   Severity: HIGH — silently tests different behavior than production.
+
+5. **Excessive mocking:** Search for with-redefs, with-bindings, and mock/stub
    patterns. These often indicate tests coupled to implementation rather than behavior.
 
-4. **Duplicated production logic:** Look for test helper functions that reimplement
+   Severity: MEDIUM for with-redefs on internal functions.
+   Severity: LOW for with-redefs on external dependencies (acceptable).
+
+6. **Duplicated production logic:** Look for test helper functions that reimplement
    logic that already exists in production code (e.g., manually building data
    structures that a production function already creates).
+
+   Severity: MEDIUM — maintenance burden and divergence risk.
 
 Return findings as a list of {file, line, pattern, violation, severity}.
 Do NOT create GitHub issues — just return findings.
@@ -313,6 +378,8 @@ After all agents complete:
    - Unapproved mutations → `clojure-coding-standards` (SKILL.md)
    - Function size → `clojure-coding-standards` (CODE-ORGANIZATION.md)
    - Tests bypassing API → `bdd-scenarios` or project CLAUDE.md
+   - Config divergence / passthrough gaps → `testing-patterns` or project CLAUDE.md
+   - Manual internal construction → `testing-patterns` or project CLAUDE.md
 
 Issue format:
 ```markdown
@@ -331,9 +398,9 @@ Issue format:
 
 | Severity | Categories |
 |----------|-----------|
-| **High** | Reflection warnings, unapproved mutations, tests bypassing public API, arity mismatches |
-| **Medium** | Unused bindings, function size >80 LOC, scattered defaults, collection anti-patterns |
-| **Low** | Namespace size warnings, nesting depth, missing bang suffix |
+| **High** | Reflection warnings, unapproved mutations, tests bypassing public API via `#'`, test helper passthrough gaps, arity mismatches |
+| **Medium** | Unused bindings, function size >80 LOC, scattered defaults, collection anti-patterns, config divergence (accidental), manual internal data construction, excessive mocking |
+| **Low** | Namespace size warnings, nesting depth, missing bang suffix, config divergence (intentional) |
 
 ## Extending
 
