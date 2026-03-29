@@ -153,11 +153,21 @@ For each pattern, grep and then verify context (some patterns have legitimate us
 5. **Hidden global state:** Search for @global-, @app-, deref of module-level vars
    inside function bodies (not at top level).
 
-6. **Collection anti-patterns:** Search for:
-   - (doall (map ...))  or  (doall (filter ...))
-   - (vec (map ...))
-   - (->> coll (map ...) (filter ...))
-   - (for [x coll ...] ...)
+6. **Collection anti-patterns:** Transducers are the preferred collection processing
+   approach — they compose without intermediate sequences and work with any reducible
+   source. Search for patterns that should use transducers instead:
+
+   - (doall (map ...))  or  (doall (filter ...))  → (into [] (map f) coll)
+   - (vec (map ...))  → (into [] (map f) coll)
+   - (->> coll (map ...) (filter ...))  → (into [] (comp (map f) (filter p)) coll)
+   - (for [x coll ...] ...)  → (into [] (comp (mapcat ...) (map ...)) coll)
+   - Nested (map f (filter p coll))  → (sequence (comp (filter p) (map f)) coll)
+   - (reduce f init (map g coll))  → (transduce (map g) f init coll)
+
+   Exceptions (do NOT flag):
+   - (map f coll) returned lazily to a caller expecting a seq (no realization)
+   - Single (map f coll) with no wrapping vec/doall/into (idiomatic for lazy pipelines)
+   - (for ...) in test data construction (readability over performance)
 
 7. **Integrant lifecycle:** Search for ig/init-key defmethods. For each, verify a
    matching ig/halt-key! exists. Missing halt-key! means resources leak on system
