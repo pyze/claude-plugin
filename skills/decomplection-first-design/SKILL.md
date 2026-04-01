@@ -23,13 +23,21 @@ description: Apply simple-over-easy design philosophy. Use when making design de
 
 ---
 
-## Core Principle
+## Core Definitions (per Rich Hickey, "Simple Made Easy")
 
-**Simple always wins.**
+**Simple** (sim-plex: one fold/braid) = having one role, one concept, one dimension. Not interleaved with other things. Simple is an **objective** property of the artifact — you can look and see whether things are braided together. Simple is not about cardinality (having "only one thing") or about familiarity.
 
-- **Simple** = not entangled, separable, composable (opposite of complex)
-- **Easy** = nearby, familiar, requires little effort
-- **Our choice**: Simple but hard > Easy but entangled
+**Easy** (adjacent: to lie near) = nearby in three senses: at hand (installed), familiar (already known), near our capabilities (can we understand it). Easy is **relative** — easy for whom? When someone says "this is simple" but means "this is familiar to me," that conflation is the root cause of accidental complexity.
+
+**Complex** (com-plex: braided together) = multiple things interleaved. The interleaving is what makes it hard to understand, change, and debug. Modularity does NOT imply simplicity — you can have separate modules that are completely complected through hidden dependencies.
+
+**Complect** = to interleave, entwine, braid. The act of making things complex. Don't do it.
+
+**Construct vs Artifact**: We evaluate constructs (the code we type) by ease of use, but we should evaluate them by the artifacts they produce (the running system over time). The user doesn't care how pleasant the code was to write — they care whether it works, can be debugged, and can be changed.
+
+**State is never simple.** State fundamentally complects value and time. This complexity leaks through modularity boundaries — if a function returns different results for the same inputs, that complection poisons everything that touches it. State isn't just a risk to manage; it's an irreducible source of complection.
+
+**Our choice**: Simple but hard > Easy but entangled. Always.
 
 ```
               Easy    | Hard
@@ -43,25 +51,34 @@ description: Apply simple-over-easy design philosophy. Use when making design de
 
 ## Decomplection Decision Tree
 
-When choosing between approaches:
+When evaluating a design, ask these questions in order:
 
 ```
-Does this entangle multiple concerns?
-Can I separate them cleanly?
-    │
-    ├─ YES, can separate → DECOUPLE FIRST
-    │
-    └─ NO → Can I express this as pure function?
-             │
-             ├─ YES → Use pure function (simple!)
-             │
-             └─ NO → Can I push effects to boundary?
-                      │
-                      ├─ YES → Pure core + thin IO layer
-                      │
-                      └─ NO → Minimize entanglement
-                               Document hidden deps
+1. Does this have ONE role / ONE concept / ONE dimension?
+   │
+   ├─ NO → It's complected. What things are braided together?
+   │        Unbraid them into separate, focused pieces.
+   │
+   └─ YES ↓
+
+2. Are all dependencies explicit (no hidden state, globals, ambient context)?
+   │
+   ├─ NO → Make them explicit as arguments.
+   │
+   └─ YES ↓
+
+3. Can I express this as a pure function (same inputs → same outputs)?
+   │
+   ├─ YES → Do it. This is simple.
+   │
+   └─ NO → Can I push effects to the boundary?
+            │
+            ├─ YES → Pure core + thin IO shell
+            │
+            └─ NO → Minimize complection. Document what's braided and why.
 ```
+
+**Warning**: Don't confuse separation with simplicity. Putting complected code into separate modules doesn't make it simple — it just hides the braiding. The question is whether things are interleaved, not whether they're in different files.
 
 ---
 
@@ -124,9 +141,9 @@ Can I separate them cleanly?
 
 ## Mutable State Requires User Approval
 
-**⚠️ CRITICAL: Any mutable state (atom, volatile, ref, agent) is a decomplection violation unless explicitly approved by the user.**
+**⚠️ CRITICAL: State is never simple.** It fundamentally complects value and time — you cannot get a value independent of when you ask. This complection leaks through every abstraction boundary: if the thing wrapping it is stateful, and the thing wrapping that is stateful, the complexity spreads like poison. No amount of modularity fixes this.
 
-Global mutable state is the #1 source of hidden dependencies. Before introducing ANY mutable construct:
+Any mutable state (atom, volatile, ref, agent) is a decomplection violation unless explicitly approved by the user. Before introducing ANY mutable construct:
 
 1. **STOP** - Do not write the code yet
 2. **ASK** - Request explicit user approval
@@ -217,11 +234,12 @@ Before committing, verify:
 
 ## Summary
 
-1. **Simple beats easy** - Choose decomplected over familiar
-2. **Explicit beats implicit** - All dependencies visible
-3. **Composition beats entanglement** - Small pieces fit together
-4. **Pure beats impure** - Side effects at boundaries
-5. **Separate concerns** - One responsibility per function
-6. **Test in isolation** - Each component provably correct
+1. **Simple is objective, easy is relative** — evaluate the artifact, not the typing experience
+2. **One fold** — each thing has one role, one concept, one dimension
+3. **Complect is the enemy** — interleaving things is how complexity is born
+4. **State is never simple** — it complects value and time; minimize it ruthlessly
+5. **Explicit beats implicit** — all dependencies visible as arguments
+6. **Composition beats entanglement** — place things together, don't braid them
+7. **Modularity ≠ simplicity** — separate modules can still be complected
 
 **For error handling decisions**, see [error-handling-patterns](../error-handling-patterns/) which covers the "fail fast > fallback > backward compatibility" hierarchy.
