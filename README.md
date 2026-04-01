@@ -18,68 +18,47 @@ Or add to your project's `.claude/settings.json`:
 }
 ```
 
+<!-- BEGIN GENERATED CATALOG -->
 ## Skills
 
-### Clojure Coding Standards
 | Skill | Description |
 |-------|-------------|
-| `clojure-coding-standards` | Unified code quality: FP principles, organization, collections, idioms |
-| `error-handling-patterns` | Fail-fast philosophy, Truss assertions, Telemere structured logging |
-| `caching-and-purity` | Referential transparency, cache correctness, purity diagnostics |
-| `decomplection-first-design` | Simple-over-easy philosophy, concern separation |
-
-### ClojureScript & Build
-| Skill | Description |
-|-------|-------------|
-| `clojurescript-cross-platform-code` | JVM TDD, .clj/.cljs/.cljc decision tree, reader conditionals |
-| `clojurescript-shadow-cljs` | Shadow-CLJS configuration, hot reload, build targets |
-
-### System Architecture
-| Skill | Description |
-|-------|-------------|
-| `integrant-lifecycle` | System lifecycle, service naming (slash notation), Aero config |
-| `reitit-routing` | Server and client routing, URL design, history behavior |
-
-### Development Workflow
-| Skill | Description |
-|-------|-------------|
-| `repl-driven-development` | REPL exploration + TDD implementation (compressed 5-phase default, full 13-phase for complex features) |
-| `clojure-mcp-repl` | clojure_eval MCP tool mechanics, nREPL connection, system management |
-| `specification-first-development` | Specifications before code, 4-phase workflow |
-| `bdd-scenarios` | Given/When/Then scenarios in clojure.test |
-| `documentation-maintenance` | Documentation placement and maintenance guidelines |
-
-### Design & Process
-| Skill | Description |
-|-------|-------------|
-| `pdca-cycle` | Plan-Do-Check-React loop for complex work — phase transitions, gap analysis, lessons learned |
-| `pr-document` | PR template co-authoring, review dimensions |
-| `nucleus-notation` | Mathematical prompting framework for compressed AI directives |
-
-### Learning & Search
-| Skill | Description |
-|-------|-------------|
-| `learning-capture` | When and where to persist learnings (auto-memory vs skills vs CLAUDE.md) |
-| `repl-semantic-search` | REPL introspection as semantic search over Clojure codebases |
-| `rewrite-clj-transforms` | Structural code modification via bb + rewrite-clj (ns requires, EDN updates, bulk transforms) |
-
-### Library-Specific Skills (v3.0)
-| Skill | Description |
-|-------|-------------|
-| `pathom3-eql` | Pathom 3 resolver patterns, EQL queries, error handling, ident conventions |
-| `replicant-ui` | Replicant vDOM, hiccup syntax, event handlers, lifecycle hooks, JS interop |
-| `continuous-eql` | Missionary signal graph, reactive Pathom, MissionaryTask/Flow protocols |
-| `pyramid-state-management` | Pyramid normalized store, entity identity, ident conventions |
+| `bdd-scenarios` | Convert specification examples into executable Given/When/Then scenarios using clojure.test |
+| `caching-and-purity` | Reason correctly about caching and referential transparency |
+| `clojure-coding-standards` | Comprehensive Clojure code quality standards including functional programming principles, code organization guidelines, and collection transformation patterns - use for writing maintainable, testable, and performant Clojure code |
+| `clojure-mcp-repl` | Execute Clojure/ClojureScript code at the REPL using clojure-mcp (MCP server) |
+| `clojurescript-cross-platform-code` | Write cross-platform ClojureScript code for JVM TDD |
+| `clojurescript-shadow-cljs` | Build ClojureScript with Shadow-CLJS compilation and hot reload |
+| `continuous-eql` | Continuous EQL — Missionary Signal Graph Architecture |
+| `decomplection-first-design` | Apply simple-over-easy design philosophy |
+| `documentation-maintenance` | Follow documentation placement and maintenance guidelines |
+| `error-handling-patterns` | Design error handling with fail-fast philosophy, Truss assertions, and Telemere structured logging |
+| `gemini-sdk-clojure` | Use when writing Clojure code that calls the Google Gemini Java SDK (com.google.genai), adding function declarations, building schemas, handling function calls, or debugging varargs interop errors |
+| `integrant-lifecycle` | Manage system lifecycle with Integrant dependency injection |
+| `learning-capture` | Decide when and where to persist learnings |
+| `nucleus-notation` | Encode behavioral directives and data models using mathematical symbols for compressed AI prompts |
+| `pathom3-eql` | Build EQL resolvers with Pathom 3 for data resolution |
+| `pdca-cycle` | Plan-Do-Check-React cycle for complex work |
+| `pr-document` | Use when preparing a pull request, filling out the PR template, or when the user says /pr-document |
+| `pyramid-state-management` | Manage normalized state with Pyramid |
+| `reitit-routing` | Configure server and client routing with Reitit |
+| `repl-driven-development` | Follow REPL-driven development workflow |
+| `repl-semantic-search` | Use REPL introspection as semantic search over Clojure codebases |
+| `replicant-ui` | Build UI components with Replicant vDOM and hiccup syntax |
+| `rewrite-clj-transforms` | Structural Clojure code modification via bb + rewrite-clj |
+| `specification-first-development` | Write specifications before code to clarify requirements |
+| `wemble-gemini` | Use when using Wemble's Gemini integration - client lifecycle, chat-turn, ask/ask-json/ask-text, tool data maps, context caching, ->schema DSL, and schema compatibility validation |
 
 ## Commands
 
 | Command | Description |
 |---------|-------------|
-| `/five-whys` | Root cause analysis for Claude mistakes via why chain |
 | `/align-docs` | Proactive documentation audit for ambiguities and conflicts |
+| `/code-cleanup` | Static analysis for Clojure code quality violations |
 | `/derisk` | Risk analysis: identify options, validate assumptions at REPL |
 | `/execute` | Execute an implementation plan from a GitHub issue |
-| `/code-cleanup` | Static analysis for Clojure code quality violations |
+| `/five-whys` | Root cause analysis for Claude mistakes via why chain |
+<!-- END GENERATED CATALOG -->
 
 ## Hooks (v3.0)
 
@@ -98,7 +77,8 @@ The plugin provides hooks for PDCA workflow automation and do-phase principle re
 | Issue creation reminder | `PostToolUse:Bash` | Remind that issue body = problem statement |
 | PDCA phase transition | `PostToolUse:Task` | Prompt Check phase when Do tasks complete |
 | Mutable state detection | `PostToolUse:Edit` | Warn on unapproved atom/volatile!/ref/agent introduction |
-| Principles survival | `PreCompact` | Re-inject TDD/fail-fast/decomplection principles before context compression (do phase only) |
+| Assumption violation check | `SubagentStop` | Prompt-based: evaluate if subagent deviated from plan due to unexpected conditions |
+| Principles survival | `PreCompact` | Re-inject TDD/fail-fast/decomplection/assumptions before context compression (do phase only) |
 | Issue stack on notification | `Notification` | Show issue stack breadcrumb |
 | PDCA stop check | `Stop` | Check PDCA phase and prompt next action |
 | Issue stack on start | `SessionStart` | Show current issue stack at session start |
@@ -120,6 +100,7 @@ The plugin provides hooks for PDCA workflow automation and do-phase principle re
 | `derisk-on-exit-plan.sh` | Enforce derisk results — allow LOW/NONE/ACCEPTED, escalate MEDIUM/HIGH to user |
 | `do-phase-principles-reminder.sh` | PreCompact: re-inject TDD/fail-fast/decomplection before context compression |
 | `tdd-gate.sh` | Advisory TDD check: warn on source edits when no tests modified yet |
+| `generate-readme-catalog.sh` | Generate Skills/Commands tables from frontmatter (`--update` to write to README) |
 | `statusline.sh` | Status line showing issue stack, PDCA phase, model, context % |
 
 ## Status Line
