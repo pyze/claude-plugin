@@ -86,6 +86,7 @@ After all Do-phase tasks are complete, **enter plan mode** and produce a gap ana
 - New issues discovered during implementation
 - Quality concerns (tests missing, edge cases unhandled)
 - Purity violations in touched files — flag hidden state, impure functions, missing `!` suffixes
+- **Fallback code scan** — run `git diff` against the branch point and scan changed Clojure files for new fallback patterns: `(or <expr> <literal>)`, `(get m k default)`, `(when-not x ...)` with fallback body, `(try ... (catch ... <default>))`. For each hit, evaluate whether the data should be present at the source instead. Flag violations for resolution before React.
 - Documentation updated for any user-visible features
 
 **Lessons learned** — reflect on the Do phase. These are reusable insights, not issue-specific details:

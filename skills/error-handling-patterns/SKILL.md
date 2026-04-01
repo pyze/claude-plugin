@@ -76,6 +76,20 @@ Implement explicit, fail-fast error handling that makes problems visible during 
 ;; Clear: Initialization fails if key is missing, no ambiguity
 ```
 
+### Fix the Source, Don't Route Around It
+
+When data is missing, the correct response is almost always to make the data present — not to add a conditional fallback.
+
+| Instead of (fallback) | Use (fix the source) |
+|----------------------|---------------------|
+| `(or name "Anonymous")` | `(have string? name)` — ensure name is always provided |
+| `(get config :key default-val)` | `(have some? (get config :key))` — ensure config has the key |
+| `(when-not x (create-default))` | `(have some? x)` — ensure x is provided by caller |
+| `(if (nil? db) (mock-db) ...)` | `(have some? db)` — ensure db is initialized |
+| `(try (op) (catch _ default))` | `(op)` — let it fail; fix why it fails |
+
+**The test**: If you're about to write `or`, `when-not`, `if-not`, or `try/catch` to handle missing data, ask: *should this data be present?* If yes, make it present and assert with `have`. Only use defaults for genuinely optional, user-facing values.
+
 ### When System Should Fail
 
 - **Missing required configuration** (API keys, database URLs)

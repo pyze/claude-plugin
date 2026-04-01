@@ -16,7 +16,7 @@ echo "$LABELS" | grep -q 'pdca:do' || exit 0
 cat <<'EOF'
 === DO-PHASE PRINCIPLES (survive into compressed context) ===
 1. TDD: Write/update test BEFORE implementation. No src/ edit without test/ edit first.
-2. FAIL-FAST: (have pred? val) at boundaries. No silent fallbacks. Fail > fallback > compat.
+2. FAIL-FAST: When data is missing, fix the SOURCE — never (or x default) to route around it. Use (have pred? val) at boundaries.
 3. DECOMPLECT: All deps explicit as args. No hidden state. One concern per fn. Ask before atom/ref.
 ===
 EOF
