@@ -54,6 +54,7 @@ Or add to your project's `.claude/settings.json`:
 | Command | Description |
 |---------|-------------|
 | `/align-docs` | Proactive documentation audit for ambiguities and conflicts |
+| `/arch-purity` | Architectural gap analysis: validate code against declared architecture |
 | `/code-cleanup` | Static analysis for Clojure code quality violations |
 | `/derisk` | Risk analysis: identify options, validate assumptions at REPL |
 | `/execute` | Execute an implementation plan from a GitHub issue |
