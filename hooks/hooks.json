@@ -132,6 +132,16 @@
         ]
       }
     ],
+    "SubagentStop": [
+      {
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "If this subagent was working on a PDCA Do-phase task: review whether it encountered unexpected conditions and fundamentally changed its implementation approach from what was planned. Minor adaptations (different function name, slightly different data shape) are fine — approve. But if the subagent discovered something that invalidates the planned approach and worked around it (added fallback paths, switched strategies, skipped planned functionality instead of implementing it), block and explain what was found and why replanning may be needed. If this is not a PDCA Do-phase task, approve."
+          }
+        ]
+      }
+    ],
     "PreCompact": [
       {
         "hooks": [
