@@ -143,6 +143,21 @@ This aligns with the error handling hierarchy in `error-handling-patterns/`:
   (is (= 4 (+ 2 2))))
 ```
 
+**Never prefix unused bindings with `_` to silence linter warnings.** Remove the dead code instead. Only use `_` prefix when the parameter is required by a function contract (callback arity, protocol method signature, `with-redefs` mock) and cannot be eliminated.
+
+```clojure
+;; ❌ BAD — silences linter but leaves dead code
+(let [_unused-result (some-fn)]
+  other-value)
+
+;; ✅ GOOD — remove the binding entirely
+(do (some-fn)  ; keep if side-effecting, delete if pure
+    other-value)
+
+;; ✅ OK — _ required by contract (e.g., callback arity)
+(map (fn [_idx val] (process val)) (range) items)
+```
+
 **Exception: Check for carve false positives before deleting:**
 - Code called dynamically (`apply-operator`, `resolve`, `var`)
 - Callbacks registered elsewhere (event handlers, protocol extensions)
