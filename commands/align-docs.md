@@ -1,3 +1,8 @@
+---
+name: align-docs
+description: Proactive documentation audit for ambiguities and conflicts
+---
+
 # /align-docs — Align Claude-Facing Documentation
 
 Proactively audit all Claude-facing documents for ambiguities, redundancies, conflicts, and staleness. Produces a prioritized report, then walks through each finding one-by-one with proposed fixes.

@@ -81,20 +81,24 @@ Or add to your project's `.claude/settings.json`:
 | `/execute` | Execute an implementation plan from a GitHub issue |
 | `/code-cleanup` | Static analysis for Clojure code quality violations |
 
-## Hooks (v2.0)
+## Hooks (v3.0)
 
-The plugin provides hooks for PDCA workflow automation:
+The plugin provides hooks for PDCA workflow automation and do-phase principle reinforcement:
 
 | Hook | Event | Purpose |
 |------|-------|---------|
 | PDCA plan transition | `PreToolUse:EnterPlanMode` | Transition issue to `pdca:plan`, print PDCA reminder |
 | Principles check | `PreToolUse:ExitPlanMode` | Validate plan against project principles before execution |
 | Decomplection review | `PreToolUse:ExitPlanMode` | Gate plan finalization with decomplection checklist |
-| Derisk gate | `PreToolUse:ExitPlanMode` | Loop /derisk until all risks are LOW before execution |
-| Block local plans | `PreToolUse:Write` | Prevent creating local plan files (forces GitHub Issues) |
-| Issue stack display | `PreToolUse:Bash\|Task\|Edit` | Show current issue stack context |
+| Derisk gate | `PreToolUse:ExitPlanMode` | Enforce risk assessment — checks `/derisk` result file, escalates MEDIUM/HIGH to user |
+| Block writes in plan mode | `PreToolUse:Write` | Block all file writes during `pdca:plan` phase (forces GitHub Issues) |
+| TDD gate | `PreToolUse:Edit\|Write` | Advisory: warn when editing source files with no test files modified yet (do phase only) |
+| REPL hint | `PreToolUse:Grep` | Suggest REPL for structural queries when nREPL is running |
 | Git commit reminder | `PostToolUse:Bash` | Remind to update issue stack on commit |
+| Issue creation reminder | `PostToolUse:Bash` | Remind that issue body = problem statement |
 | PDCA phase transition | `PostToolUse:Task` | Prompt Check phase when Do tasks complete |
+| Mutable state detection | `PostToolUse:Edit` | Warn on unapproved atom/volatile!/ref/agent introduction |
+| Principles survival | `PreCompact` | Re-inject TDD/fail-fast/decomplection principles before context compression (do phase only) |
 | Issue stack on notification | `Notification` | Show issue stack breadcrumb |
 | PDCA stop check | `Stop` | Check PDCA phase and prompt next action |
 | Issue stack on start | `SessionStart` | Show current issue stack at session start |
@@ -105,15 +109,17 @@ The plugin provides hooks for PDCA workflow automation:
 |-------|-------------|
 | `issue-listener` | Monitors GitHub issues for new comments, posts `[claude-response]` replies |
 
-## Scripts (v2.0)
+## Scripts (v3.0)
 
 | Script | Purpose |
 |--------|---------|
 | `pdca-plan-on-enter-plan-mode.sh` | PDCA label transition + plan mode reminder |
 | `plan-principles-check.sh` | Principles review before plan finalization |
-| `block-local-plans.sh` | Prevent local plan file creation |
+| `block-local-plans.sh` | Block all file writes during `pdca:plan` phase |
 | `decomplection-review.sh` | Gate plan exit with decomplection checklist |
-| `derisk-on-exit-plan.sh` | Loop /derisk until all risks are LOW before execution |
+| `derisk-on-exit-plan.sh` | Enforce derisk results — allow LOW/NONE/ACCEPTED, escalate MEDIUM/HIGH to user |
+| `do-phase-principles-reminder.sh` | PreCompact: re-inject TDD/fail-fast/decomplection before context compression |
+| `tdd-gate.sh` | Advisory TDD check: warn on source edits when no tests modified yet |
 | `statusline.sh` | Status line showing issue stack, PDCA phase, model, context % |
 
 ## Status Line

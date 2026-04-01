@@ -1,3 +1,8 @@
+---
+name: five-whys
+description: Root cause analysis for Claude mistakes via why chain
+---
+
 # /five-whys — Root Cause Analysis for Claude Mistakes
 
 When Claude makes a mistake, performs a shoddy investigation, or reaches a wrong conclusion, use this command to systematically trace why it went astray and propose documentation improvements that prevent recurrence.

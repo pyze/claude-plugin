@@ -1,3 +1,8 @@
+---
+name: derisk
+description: "Risk analysis: identify options, validate assumptions at REPL"
+---
+
 # /derisk
 
 Report implementation options with their unvalidated assumptions, then validate critical assumptions at the REPL.
@@ -99,7 +104,21 @@ Store findings at `["plan-risks", "option-analysis"]` and `["plan-risks", "explo
 - Categorize remaining risks by level (NONE/LOW/MEDIUM/HIGH)
 - Note confidence level in recommended option
 
-### 8. Handle Optional Arguments
+### 8. Write Risk Result for Gate Enforcement
+
+After completing the assessment, write the **highest** risk level across all options to a result file so the ExitPlanMode gate can enforce it:
+
+```bash
+# Find the current plan file and compute its hash
+PLAN_FILE=$(ls -t "${CLAUDE_PROJECT_DIR:-.}/.claude/plans/"*.md 2>/dev/null | head -1)
+PLAN_HASH=$(echo "$PLAN_FILE" | shasum -a 256 | cut -d' ' -f1)
+mkdir -p /tmp/claude-derisk-result
+echo "LOW" > "/tmp/claude-derisk-result/$PLAN_HASH"  # Replace LOW with actual highest risk level
+```
+
+Use the highest risk level found across all analyzed options (NONE, LOW, MEDIUM, or HIGH).
+
+### 9. Handle Optional Arguments
 
 - Use `$ARGUMENTS` for additional context or focus areas
 - If specific assumptions mentioned, prioritize those

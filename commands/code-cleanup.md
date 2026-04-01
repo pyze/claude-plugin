@@ -1,3 +1,8 @@
+---
+name: code-cleanup
+description: Static analysis for Clojure code quality violations
+---
+
 # /code-cleanup
 
 Analyze code for violations of Clojure best practices. Dispatches focused agents in parallel, each examining a cohesive subset of standards, then creates categorized GitHub issues from their findings.

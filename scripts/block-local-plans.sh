@@ -1,30 +1,27 @@
 #!/bin/bash
-# Blocks creation of local plan/todo files — forces use of GitHub Issues.
+set -euo pipefail
+# Blocks all Write calls during pdca:plan phase — forces use of GitHub Issues.
 # Exit code 2 = block the tool call and send the message back to Claude.
 
-INPUT=$(cat)
-FILE_PATH=$(echo "$INPUT" | jq -r '.tool_input.file_path // empty')
+STACK="${CLAUDE_PROJECT_DIR:-.}/.claude/issue-stack.md"
 
-if [ -z "$FILE_PATH" ]; then
+# No issue stack — allow through
+if [ ! -f "$STACK" ]; then
   exit 0
 fi
 
-BASENAME=$(basename "$FILE_PATH" | tr '[:upper:]' '[:lower:]')
+ISSUE=$(grep '^- #' "$STACK" | head -1 | grep -o '#[0-9]*' | tr -d '#' || true)
 
-# Block common local planning file patterns
-case "$BASENAME" in
-  plan.md|plans.md|todo.md|todos.md|tasks.md|roadmap.md|backlog.md|spec.md|design.md)
-    echo "BLOCKED: Do not create local plan files. Use GitHub Issues as the planning surface. Create or update a GitHub issue instead. NOTE: Updating GitHub issues in plan mode IS allowed and encouraged — use gh or GitHub MCP tools." >&2
-    exit 2
-    ;;
-esac
+# No active issue — allow through
+if [ -z "$ISSUE" ]; then
+  exit 0
+fi
 
-# Also catch files in a plans/ or planning/ directory
-case "$FILE_PATH" in
-  */plans/*|*/planning/*)
-    echo "BLOCKED: Do not create files in plans/ or planning/ directories. Use GitHub Issues as the planning surface. NOTE: Updating GitHub issues in plan mode IS allowed and encouraged — use gh or GitHub MCP tools." >&2
-    exit 2
-    ;;
-esac
+LABELS=$(gh issue view "$ISSUE" --json labels -q '.labels[].name' 2>/dev/null || true)
+
+if echo "$LABELS" | grep -q 'pdca:plan'; then
+  echo "BLOCKED: You are in the Plan phase (#$ISSUE). Do not write files during planning. Use GitHub Issues as the planning surface — create or update issue comments with gh or GitHub MCP tools." >&2
+  exit 2
+fi
 
 exit 0

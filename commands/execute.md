@@ -1,3 +1,8 @@
+---
+name: execute
+description: Execute an implementation plan from a GitHub issue
+---
+
 # /execute
 
 Execute an implementation plan from a GitHub issue.
