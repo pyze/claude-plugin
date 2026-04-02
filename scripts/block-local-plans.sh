@@ -1,7 +1,15 @@
 #!/bin/bash
 set -euo pipefail
-# Blocks all Write calls during pdca:plan phase — forces use of GitHub Issues.
+# Blocks Write calls during pdca:plan phase — except plan files in .claude/plans/.
 # Exit code 2 = block the tool call and send the message back to Claude.
+
+# Exempt plan files — Claude's plan mode writes here
+FILE_PATH=$(echo "$CLAUDE_TOOL_INPUT" | grep -oE '"file_path"\s*:\s*"[^"]*"' | head -1 | sed 's/.*: *"//;s/"$//' || true)
+if [ -n "$FILE_PATH" ]; then
+  case "$FILE_PATH" in
+    */.claude/plans/*) exit 0 ;;
+  esac
+fi
 
 STACK="${CLAUDE_PROJECT_DIR:-.}/.claude/issue-stack.md"
 

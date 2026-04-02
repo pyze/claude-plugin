@@ -61,17 +61,16 @@ Or add to your project's `.claude/settings.json`:
 | `/five-whys` | Root cause analysis for Claude mistakes via why chain |
 <!-- END GENERATED CATALOG -->
 
-## Hooks (v3.0)
+## Hooks (v4.0)
 
 The plugin provides hooks for PDCA workflow automation and do-phase principle reinforcement:
 
 | Hook | Event | Purpose |
 |------|-------|---------|
-| PDCA plan transition | `PreToolUse:EnterPlanMode` | Transition issue to `pdca:plan`, print PDCA reminder |
-| Principles check | `PreToolUse:ExitPlanMode` | Validate plan against project principles before execution |
-| Decomplection review | `PreToolUse:ExitPlanMode` | Gate plan finalization with decomplection checklist |
-| Derisk gate | `PreToolUse:ExitPlanMode` | Enforce risk assessment — checks `/derisk` result file, escalates MEDIUM/HIGH to user |
-| Block writes in plan mode | `PreToolUse:Write` | Block all file writes during `pdca:plan` phase (forces GitHub Issues) |
+| PDCA plan transition | `PreToolUse:EnterPlanMode` | Transition issue to `pdca:plan`, explain required plan sections |
+| Plan to issue | `PreToolUse:ExitPlanMode` | Require active GitHub issue, auto-post plan as comment (backgrounded) |
+| Plan review gate | `PreToolUse:ExitPlanMode` | Check for `## Decomplection Review` and `## Risk Assessment` markers; verify derisk result |
+| Block writes in plan mode | `PreToolUse:Write` | Block file writes during `pdca:plan` (except `.claude/plans/`) |
 | TDD gate | `PreToolUse:Edit\|Write` | Advisory: warn when editing source files with no test files modified yet (do phase only) |
 | REPL hint | `PreToolUse:Grep` | Suggest REPL for structural queries when nREPL is running |
 | Git commit reminder | `PostToolUse:Bash` | Remind to update issue stack on commit |
@@ -90,16 +89,15 @@ The plugin provides hooks for PDCA workflow automation and do-phase principle re
 |-------|-------------|
 | `issue-listener` | Monitors GitHub issues for new comments, posts `[claude-response]` replies |
 
-## Scripts (v3.0)
+## Scripts (v4.0)
 
 | Script | Purpose |
 |--------|---------|
-| `pdca-plan-on-enter-plan-mode.sh` | PDCA label transition + plan mode reminder |
-| `plan-principles-check.sh` | Principles review before plan finalization |
-| `block-local-plans.sh` | Block all file writes during `pdca:plan` phase |
-| `decomplection-review.sh` | Gate plan exit with decomplection checklist |
-| `derisk-on-exit-plan.sh` | Enforce derisk results — allow LOW/NONE/ACCEPTED, escalate MEDIUM/HIGH to user |
-| `do-phase-principles-reminder.sh` | PreCompact: re-inject TDD/fail-fast/decomplection before context compression |
+| `pdca-plan-on-enter-plan-mode.sh` | PDCA label transition + explain required plan sections |
+| `plan-to-issue.sh` | Auto-post plan to GitHub issue (backgrounded), block if no issue |
+| `plan-review-gate.sh` | Marker-based gate: check for decomplection/risk sections + verify derisk result |
+| `block-local-plans.sh` | Block file writes during `pdca:plan` (except `.claude/plans/`) |
+| `do-phase-principles-reminder.sh` | PreCompact: re-inject TDD/fail-fast/decomplection/assumptions |
 | `tdd-gate.sh` | Advisory TDD check: warn on source edits when no tests modified yet |
 | `generate-readme-catalog.sh` | Generate Skills/Commands tables from frontmatter (`--update` to write to README) |
 | `statusline.sh` | Status line showing issue stack, PDCA phase, model, context % |

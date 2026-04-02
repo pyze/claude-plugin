@@ -35,12 +35,14 @@ This is a loop, not a linear sequence. It repeats until the work is complete wit
 
 ### Plan (`pdca:plan`)
 
-Create or refine a GitHub issue with a task list. This is the plan of record.
+Use Claude's native plan mode. The plan is automatically posted to the GitHub issue when you exit plan mode.
 
 **Requirements:**
-1. Use Claude's plan mode to analyze the codebase
-2. Exit plan mode to create/update the issue
-3. Include a `## Core Assumptions` section — facts the plan depends on, each with a verification method (e.g., "verify at REPL", "confirm via grep")
+1. Use Claude's plan mode to analyze the codebase and write the plan
+2. Include a `## Core Assumptions` section — facts the plan depends on
+3. On ExitPlanMode, the plan is auto-posted to the active GitHub issue (backgrounded)
+4. If `## Decomplection Review` and `## Risk Assessment` sections are missing, the exit gate will instruct you to dispatch two independent review agents (in parallel) that cold-read the plan — these write to temp files to avoid conflicts, then you merge them into the plan
+5. The derisk result file must show LOW/NONE/ACCEPTED risk to pass the gate
 
 **Issue body format** (problem first — see [documentation-maintenance](../documentation-maintenance/)):
 ```markdown
@@ -132,10 +134,9 @@ The plugin provides automation hooks for PDCA transitions:
 
 | Hook | Event | What it does |
 |------|-------|-------------|
-| `pdca-plan-on-enter-plan-mode.sh` | PreToolUse:EnterPlanMode | Transitions label to `pdca:plan` |
-| `plan-principles-check.sh` | PreToolUse:ExitPlanMode | Validates plan principles |
-| `decomplection-review.sh` | PreToolUse:ExitPlanMode | Gates exit with decomplection checklist |
-| `derisk-on-exit-plan.sh` | PreToolUse:ExitPlanMode | Loops /derisk until all risks are LOW |
+| `pdca-plan-on-enter-plan-mode.sh` | PreToolUse:EnterPlanMode | Transitions label to `pdca:plan`, explains required sections |
+| `plan-to-issue.sh` | PreToolUse:ExitPlanMode | Requires active issue, posts plan as comment (backgrounded) |
+| `plan-review-gate.sh` | PreToolUse:ExitPlanMode | Checks for `## Decomplection Review` and `## Risk Assessment` markers, verifies derisk result |
 | PostToolUse:Task | PostToolUse:Task | Prompts Check phase when Do tasks complete |
 | Stop | Stop | Checks PDCA phase and prompts next action |
 

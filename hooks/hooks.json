@@ -15,7 +15,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/scripts/plan-principles-check.sh"
+            "command": "${CLAUDE_PLUGIN_ROOT}/scripts/plan-to-issue.sh"
           }
         ]
       },
@@ -24,16 +24,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/scripts/decomplection-review.sh"
-          }
-        ]
-      },
-      {
-        "matcher": "ExitPlanMode",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/scripts/derisk-on-exit-plan.sh"
+            "command": "${CLAUDE_PLUGIN_ROOT}/scripts/plan-review-gate.sh"
           }
         ]
       },

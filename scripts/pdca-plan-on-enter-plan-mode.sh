@@ -25,9 +25,22 @@ done
 # Print reminder regardless of current phase
 TITLE=$(gh issue view "$ISSUE" --json title -q '.title' 2>/dev/null || echo "unknown")
 cat <<EOF
-PDCA REMINDER: You are now in the PLAN phase of PDCA for issue #$ISSUE ($TITLE).
-Plan phase means: analyze, design, and write the plan as comments on the GitHub issue. Do NOT implement code changes. Do NOT execute the plan. Do NOT write plan files to the local filesystem. Planning only — research, read code, ask questions, document the plan on the GitHub issue.
-Allowed in plan mode: REPL evaluation (clojure_eval MCP tool) to validate assumptions and test data shapes. GitHub issue CRUD (gh issue create/edit/view, MCP issue tools) to read and update plans. Plans live on GitHub Issues, not in local files.
+PDCA PLAN PHASE (#$ISSUE: $TITLE):
+Write your plan using plan mode. It will be automatically posted to the GitHub issue when you exit plan mode.
+
+Your plan MUST include these sections to pass the exit gate:
+
+## Decomplection Review
+## Risk Assessment
+
+You do NOT write these yourself. When you call ExitPlanMode, if these sections are missing, you will be instructed to dispatch two independent review agents (in parallel) that cold-read your plan and write these sections. This ensures unbiased review — the agents have no conversation history or attachment to your design.
+
+The agents will:
+1. Evaluate decomplection against the skill's Implementation Checklist
+2. Run /derisk to validate assumptions at the REPL
+
+Plans missing these sections will be blocked from exiting plan mode.
+Plans with MEDIUM/HIGH risk will be escalated to the user.
 EOF
 
 # Already in plan — skip label transition
