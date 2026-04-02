@@ -82,7 +82,7 @@ When evaluating a design, ask these questions in order:
 
 ---
 
-## Three Core Patterns
+## Four Core Patterns
 
 ### Pattern 1: Extract Concerns
 
@@ -136,6 +136,31 @@ When evaluating a design, ask these questions in order:
   ;; No hidden state, testable with any inputs
   ...)
 ```
+
+### Pattern 4: DDRY (Decomplected Don't Repeat Yourself)
+
+DRY alone is dangerous — it creates abstractions that braid unrelated concerns together just because they share some code. DDRY means: when you extract shared code, the result must be decomplected and composable.
+
+```clojure
+;; BAD DRY: extracted shared code, but it does three things for two callers
+(defn process-entity [entity mode]
+  (let [validated (validate entity)
+        enriched (if (= mode :admin) (add-audit validated) validated)
+        result (if (= mode :admin) (save-with-log enriched) (save enriched))]
+    result))
+
+;; DDRY: composable pieces, each with one role
+(defn validate [entity] ...)
+(defn add-audit [entity] ...)
+(defn save [entity] ...)
+(defn save-with-log [entity] (save (add-audit entity)))
+
+;; Callers compose what they need
+(comp save validate)              ;; regular path
+(comp save-with-log validate)     ;; admin path
+```
+
+**The test**: When you extract shared code, does each piece have one role? Can callers compose them independently? If the shared function takes a `mode` or `type` parameter to switch behavior, it's DRY but not DDRY — split it.
 
 ---
 
@@ -241,5 +266,6 @@ Before committing, verify:
 5. **Explicit beats implicit** — all dependencies visible as arguments
 6. **Composition beats entanglement** — place things together, don't braid them
 7. **Modularity ≠ simplicity** — separate modules can still be complected
+8. **DDRY over DRY** — extracted code must be decomplected and composable, not just not-repeated
 
 **For error handling decisions**, see [error-handling-patterns](../error-handling-patterns/) which covers the "fail fast > fallback > backward compatibility" hierarchy.

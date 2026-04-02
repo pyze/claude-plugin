@@ -16,6 +16,17 @@ A loop for complex work: Plan → Do → Check → React → (repeat or done).
 
 **Skip PDCA for:** Quick bug fixes, typos, single-file changes. Use `-` as the phase.
 
+### Key Coding Principles (apply in every phase)
+
+These principles guide planning, implementation, and review:
+
+- **DDRY** (Decomplected Don't Repeat Yourself) — it's not enough to just extract shared code. Shared code must be decomplected and composable: one role, explicit dependencies, pure where possible. DRY without decomplection creates abstractions that braid unrelated concerns together.
+- **Fail-fast** — fix the source of missing data, don't route around it. No `(or x default)` for data that should be present. No fallback code paths in production.
+- **TDD** — write/update tests before implementation.
+- **Decomplection** — one fold: each thing has one role, one concept, one dimension. State is never simple. All dependencies explicit.
+
+See [decomplection-first-design](../decomplection-first-design/) and [error-handling-patterns](../error-handling-patterns/) for details.
+
 ---
 
 ## The Loop
@@ -91,6 +102,7 @@ After all Do-phase tasks are complete, **enter plan mode** and produce a gap ana
 - New issues discovered during implementation
 - Quality concerns (tests missing, edge cases unhandled)
 - Purity violations in touched files — flag hidden state, impure functions, missing `!` suffixes
+- **DDRY scan** — check for DRY extractions that complect unrelated concerns. Shared functions should have one role and compose cleanly. If an abstraction serves multiple callers by doing multiple things, it violates DDRY — split it.
 - **Fallback code scan** — run `git diff` against the branch point and scan changed Clojure files for two categories of fallback:
   1. **Missing data fallbacks**: `(or <expr> <literal>)`, `(get m k default)`, `(when-not x ...)` with fallback body, `(try ... (catch ... <default>))` — should the data be present at the source instead?
   2. **Refactoring fallbacks**: conditional dispatch between old and new code paths, deprecated function wrappers that forward to new implementations, feature flags gating old vs new behavior — if we're refactoring, cut over cleanly. Don't keep both paths alive.
