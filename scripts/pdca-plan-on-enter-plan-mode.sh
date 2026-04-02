@@ -41,6 +41,8 @@ The agents will:
 
 Plans missing these sections will be blocked from exiting plan mode.
 Plans with MEDIUM/HIGH risk will be escalated to the user.
+
+REPL exploration is always allowed in every PDCA phase — it never changes production code. Use it freely to validate assumptions and test data shapes.
 EOF
 
 # Already in plan — skip label transition

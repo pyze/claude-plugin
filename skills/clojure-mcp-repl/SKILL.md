@@ -7,6 +7,8 @@ description: Execute Clojure/ClojureScript code at the REPL using clojure-mcp (M
 
 **clojure-mcp** is the primary tool for REPL-driven development. Use it for ALL Clojure evaluation via the native `clojure_eval` MCP tool.
 
+**Always permitted**: clojure_eval is read-only exploration. It is allowed in every PDCA phase, including plan mode. It never changes production code.
+
 **Source**: https://github.com/bhauman/clojure-mcp
 
 ## Skill Boundary

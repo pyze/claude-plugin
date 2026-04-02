@@ -2,6 +2,7 @@
 set -euo pipefail
 # Blocks Write calls during pdca:plan phase — except plan files in .claude/plans/.
 # Exit code 2 = block the tool call and send the message back to Claude.
+# Note: REPL evaluation (Bash tool / clojure_eval) is unaffected by this hook.
 
 # Exempt plan files — Claude's plan mode writes here
 FILE_PATH=$(echo "$CLAUDE_TOOL_INPUT" | grep -oE '"file_path"\s*:\s*"[^"]*"' | head -1 | sed 's/.*: *"//;s/"$//' || true)

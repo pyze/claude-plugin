@@ -7,6 +7,8 @@ description: Plan-Do-Check-React cycle for complex work. Use when work spans mul
 
 A loop for complex work: Plan → Do → Check → React → (repeat or done).
 
+**Production code changes should follow the PDCA cycle.** REPL exploration is always permitted in every phase — it never changes production code.
+
 **Use PDCA when:**
 - Plan has more than ~5 checkboxes
 - Work touches more than ~3 files

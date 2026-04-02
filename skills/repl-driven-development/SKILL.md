@@ -7,6 +7,8 @@ description: Follow REPL-driven development workflow. Use when building features
 
 Build incrementally with immediate feedback. REPL for exploration, TDD for implementation.
 
+**REPL exploration is safe during any PDCA phase** — it never changes production code. Use it freely to validate assumptions, discover data shapes, and test ideas before writing code.
+
 **Primary tool**: clojure_eval (MCP tool). See [clojure-mcp-repl](../clojure-mcp-repl/) for mechanics.
 
 ## Core Principle
