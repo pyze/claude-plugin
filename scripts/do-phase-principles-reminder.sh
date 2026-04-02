@@ -4,7 +4,7 @@ set -euo pipefail
 # PreCompact hook — re-injects coding principles so they survive context compression.
 # Only fires during pdca:do phase. Silent otherwise.
 
-STACK="${CLAUDE_PROJECT_DIR:-.}/.claude/issue-stack.md"
+STACK="${CLAUDE_PROJECT_DIR:?CLAUDE_PROJECT_DIR not set}/.claude/issue-stack.md"
 [ -f "$STACK" ] || exit 0
 
 ISSUE=$(grep '^- #' "$STACK" | head -1 | grep -o '#[0-9]*' | tr -d '#' || true)

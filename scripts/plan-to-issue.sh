@@ -6,7 +6,7 @@ set -euo pipefail
 # - No plan file → allow through silently
 # - Plan exists → post to issue (backgrounded), allow through
 
-STACK="${CLAUDE_PROJECT_DIR:-.}/.claude/issue-stack.md"
+STACK="${CLAUDE_PROJECT_DIR:?CLAUDE_PROJECT_DIR not set}/.claude/issue-stack.md"
 
 if [ ! -f "$STACK" ]; then
   cat <<'DENY'
@@ -37,7 +37,7 @@ DENY
 fi
 
 # Find most recent plan file
-plan_file=$(ls -t "${CLAUDE_PROJECT_DIR:-.}/.claude/plans/"*.md 2>/dev/null | head -1 || true)
+plan_file=$(ls -t "${CLAUDE_PROJECT_DIR:?CLAUDE_PROJECT_DIR not set}/.claude/plans/"*.md 2>/dev/null | head -1 || true)
 
 # No plan file → allow through
 if [ -z "$plan_file" ]; then

@@ -12,7 +12,7 @@ if [ -n "$FILE_PATH" ]; then
   esac
 fi
 
-STACK="${CLAUDE_PROJECT_DIR:-.}/.claude/issue-stack.md"
+STACK="${CLAUDE_PROJECT_DIR:?CLAUDE_PROJECT_DIR not set}/.claude/issue-stack.md"
 
 # No issue stack — allow through
 if [ ! -f "$STACK" ]; then

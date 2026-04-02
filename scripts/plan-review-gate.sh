@@ -7,14 +7,14 @@ set -euo pipefail
 # If present → verify derisk result file for risk level.
 
 # Get active issue number for messages
-STACK="${CLAUDE_PROJECT_DIR:-.}/.claude/issue-stack.md"
+STACK="${CLAUDE_PROJECT_DIR:?CLAUDE_PROJECT_DIR not set}/.claude/issue-stack.md"
 ISSUE=""
 if [ -f "$STACK" ]; then
   ISSUE=$(grep '^- #' "$STACK" | head -1 | grep -o '#[0-9]*' | tr -d '#' || true)
 fi
 
 # Find most recent plan file
-plan_dir="${CLAUDE_PROJECT_DIR:-.}/.claude/plans"
+plan_dir="${CLAUDE_PROJECT_DIR:?CLAUDE_PROJECT_DIR not set}/.claude/plans"
 plan_file=$(ls -t "$plan_dir"/*.md 2>/dev/null | head -1 || true)
 
 # No plan file → allow through
