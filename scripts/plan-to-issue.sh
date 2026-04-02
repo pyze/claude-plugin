@@ -44,7 +44,25 @@ if [ -z "$plan_file" ]; then
   exit 0
 fi
 
-# Post plan to issue as comment (backgrounded — fire-and-forget)
-gh issue comment "$ISSUE" --body "$(cat "$plan_file")" >/dev/null 2>&1 &
+# Build comment body: plan + PDCA reminder
+PDCA_REMINDER='
+---
+## PDCA Reminder
+This issue follows the PDCA cycle. When all tasks above are complete:
+1. Update the issue label from `pdca:do` → `pdca:check`
+2. Update `.claude/issue-stack.md` phase from `do` → `check`
+3. Enter plan mode
+4. Review all changes against this plan and post a gap analysis as a comment
+5. Evaluate all touched files for purity violations — present for user approval
+6. Run fallback code scan (missing data fallbacks + refactoring fallbacks)
+7. Reflect on lessons learned during Do — save durable insights to auto-memory
+8. Present the gap analysis to the user and transition to `react`
+Do not close this issue or declare done until the full cycle completes.'
+
+COMMENT_BODY="$(cat "$plan_file")
+${PDCA_REMINDER}"
+
+# Post plan + PDCA reminder to issue as comment (backgrounded — fire-and-forget)
+gh issue comment "$ISSUE" --body "$COMMENT_BODY" >/dev/null 2>&1 &
 
 exit 0
