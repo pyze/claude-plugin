@@ -77,9 +77,7 @@ End with: Overall risk level: [NONE/LOW/MEDIUM/HIGH]
 2. DERISK AGENT
    Give it ONLY: the plan file + /derisk command + REPL access
    Output: write to /tmp/plan-risk-assessment.md
-   MUST ALSO write the derisk result file alongside the plan:
-   PLAN_FILE=\$(ls -t \"\${CLAUDE_PROJECT_DIR:-.}/.claude/plans/\"*.md 2>/dev/null | head -1)
-   echo [RISK_LEVEL] > \"\${PLAN_FILE%.md}.derisk-result\"
+   MUST include line: Overall risk level: [NONE/LOW/MEDIUM/HIGH]
 
 IMPORTANT: agents write to SEPARATE temp files to avoid clobbering.
 They must be SEPARATE agents with no conversation history.
@@ -93,38 +91,35 @@ print(json.dumps({'hookSpecificOutput': {'hookEventName': 'PreToolUse', 'permiss
   exit 0
 fi
 
-# Both markers present — verify derisk result file (sibling of plan file)
-result_file="${plan_file%.md}.derisk-result"
+# Both markers present — parse risk level from ## Risk Assessment section
+risk_level=$(awk '/^## Risk Assessment/{found=1; next} found && /^## /{exit} found && /[Oo]verall risk level:/{sub(/.*[Oo]verall risk level: */, ""); print; exit}' "$plan_file" | tr -d '[:space:]' | tr '[:lower:]' '[:upper:]')
 
-if [ ! -f "$result_file" ]; then
+# No risk level found in the section
+if [ -z "$risk_level" ]; then
   cat <<'DENY'
 {
   "hookSpecificOutput": {
     "hookEventName": "PreToolUse",
     "permissionDecision": "deny",
-    "permissionDecisionReason": "DERISK RESULT MISSING\n\nThe plan has both review sections, but no derisk result file was written.\nRun /derisk to generate the result file, then call ExitPlanMode again."
+    "permissionDecisionReason": "RISK LEVEL MISSING\n\nThe ## Risk Assessment section exists but does not contain an 'Overall risk level: [NONE/LOW/MEDIUM/HIGH]' line.\n\nAdd this line to the Risk Assessment section, then call ExitPlanMode again."
   }
 }
 DENY
   exit 0
 fi
 
-risk_level=$(cat "$result_file" | tr '[:lower:]' '[:upper:]')
-
 case "$risk_level" in
   NONE|LOW|ACCEPTED)
-    rm -f "$result_file"
     if [ -n "$ISSUE" ]; then
       echo "PLAN APPROVED — transitioning to Do phase. Before dispatching subagents, read the plan from GitHub issue #$ISSUE (gh issue view $ISSUE --comments). The issue comment contains the full plan + PDCA reminder. Include the plan content and Core Assumptions in each subagent's task description."
     fi
     exit 0
     ;;
   *)
-    rm -f "$result_file"
     python3 -c "
 import json, sys
 level = sys.argv[1]
-reason = 'RISKS REMAIN (' + level + ')\n\nDerisking found risks that could not be reduced to LOW. Do NOT loop /derisk again.\n\nPresent the remaining risks to the user and ask how they want to proceed:\n- Accept the risks and continue\n- Revise the plan to avoid the risky areas\n- Abandon this approach\n\nIf the user accepts the remaining risks, write ACCEPTED to the derisk result file before calling ExitPlanMode again:\n\nPLAN_FILE=$(ls -t \"${CLAUDE_PROJECT_DIR:-.}/.claude/plans/\"*.md 2>/dev/null | head -1)\necho ACCEPTED > \"${PLAN_FILE%.md}.derisk-result\"'
+reason = 'RISKS REMAIN (' + level + ')\n\nDerisking found risks that could not be reduced to LOW. Do NOT loop /derisk again.\n\nPresent the remaining risks to the user and ask how they want to proceed:\n- Accept the risks and continue\n- Revise the plan to avoid the risky areas\n- Abandon this approach\n\nIf the user accepts the remaining risks, change the Overall risk level line in the ## Risk Assessment section to: Overall risk level: ACCEPTED\n\nThen call ExitPlanMode again.'
 print(json.dumps({'hookSpecificOutput': {'hookEventName': 'PreToolUse', 'permissionDecision': 'deny', 'permissionDecisionReason': reason}}))
 " "$risk_level"
     exit 0

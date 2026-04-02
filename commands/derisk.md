@@ -104,17 +104,15 @@ Store findings at `["plan-risks", "option-analysis"]` and `["plan-risks", "explo
 - Categorize remaining risks by level (NONE/LOW/MEDIUM/HIGH)
 - Note confidence level in recommended option
 
-### 8. Write Risk Result for Gate Enforcement
+### 8. Include Overall Risk Level
 
-After completing the assessment, write the **highest** risk level across all options to a result file alongside the plan so the ExitPlanMode gate can enforce it:
+End the Risk Assessment section with a summary line that the ExitPlanMode gate parses:
 
-```bash
-# Write result as sibling of the plan file (.derisk-result instead of .md)
-PLAN_FILE=$(ls -t "${CLAUDE_PROJECT_DIR:-.}/.claude/plans/"*.md 2>/dev/null | head -1)
-echo "LOW" > "${PLAN_FILE%.md}.derisk-result"  # Replace LOW with actual highest risk level
+```
+Overall risk level: LOW
 ```
 
-Use the highest risk level found across all analyzed options (NONE, LOW, MEDIUM, or HIGH).
+Use the highest risk level found across all analyzed options (NONE, LOW, MEDIUM, or HIGH). The gate reads this line directly from the plan file — no separate result file needed.
 
 ### 9. Handle Optional Arguments
 
