@@ -128,6 +128,30 @@ window_operators.clj    1449 LOC   (multiple join types) → Split recommended
 (defn optimize-join-ordering [...])
 ```
 
+### Minimize Use of `(declare ...)`
+
+`(declare ...)` enables forward references, allowing functions to be called before they're defined. Minimize its use:
+
+- **`declare` is a code smell** — it usually indicates circular dependencies within the namespace or poor top-to-bottom ordering. Both are signs that the namespace is trying to do too much.
+- **Prefer reordering** — Clojure namespaces read top to bottom. Move helper functions above their callers. If you can't find a clean ordering, the functions may belong in separate namespaces.
+- **Prefer extracting** — if two functions are mutually recursive, consider whether they're actually one concept that should be a single function, or whether they belong in a shared namespace with a protocol.
+
+```clojure
+;; BAD — declare to work around ordering
+(declare process-children)
+(defn process-node [node]
+  (map process-children (:children node)))
+(defn process-children [children]
+  (map process-node children))
+
+;; BETTER — single function with recursion
+(defn process-tree [node]
+  (when node
+    (map process-tree (:children node))))
+```
+
+**Acceptable uses**: mutual recursion that genuinely can't be collapsed (rare), and REPL development where you're sketching before reordering.
+
 ---
 
 ## Refactoring Triggers
