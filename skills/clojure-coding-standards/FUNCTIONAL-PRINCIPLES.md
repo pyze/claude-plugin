@@ -336,6 +336,19 @@ The use of `setTimeout` or `requestAnimationFrame` for state synchronization usu
 
 **No acceptable uses in production code.** In test code, treat it as a temporary workaround that should be replaced with proper dependency injection.
 
+### `alter-var-root` is the same smell
+
+`alter-var-root` mutates a var globally — it's `with-redefs` without the scoping. If you're using it to configure behavior at startup, use Integrant components or explicit configuration maps instead. If you're using it to swap implementations, use protocols.
+
+```clojure
+;; BAD — global mutation to configure behavior
+(alter-var-root #'db-pool (constantly (create-pool config)))
+
+;; GOOD — Integrant component with explicit lifecycle
+(defmethod ig/init-key ::db-pool [_ config]
+  (create-pool config))
+```
+
 ---
 
 ## Pattern Matching & Destructuring
