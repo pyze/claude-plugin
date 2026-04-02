@@ -8,12 +8,12 @@ SCRIPT="$BATS_TEST_DIRNAME/../scripts/plan-review-gate.sh"
 setup() {
   export CLAUDE_PROJECT_DIR="$(mktemp -d)"
   mkdir -p "$CLAUDE_PROJECT_DIR/.claude/plans"
-  rm -rf /tmp/claude-derisk-result
+  # derisk result files are siblings of plan files, cleaned up with CLAUDE_PROJECT_DIR
 }
 
 teardown() {
   rm -rf "$CLAUDE_PROJECT_DIR"
-  rm -rf /tmp/claude-derisk-result
+  # derisk result files are siblings of plan files, cleaned up with CLAUDE_PROJECT_DIR
 }
 
 create_plan() {
@@ -24,9 +24,7 @@ create_plan() {
 
 result_file_for() {
   local plan="$1"
-  local hash
-  hash=$(echo "$plan" | shasum -a 256 | cut -d' ' -f1)
-  echo "/tmp/claude-derisk-result/$hash"
+  echo "${plan%.md}.derisk-result"
 }
 
 # --- No plan file: allow through ---

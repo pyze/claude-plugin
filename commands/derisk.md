@@ -106,14 +106,12 @@ Store findings at `["plan-risks", "option-analysis"]` and `["plan-risks", "explo
 
 ### 8. Write Risk Result for Gate Enforcement
 
-After completing the assessment, write the **highest** risk level across all options to a result file so the ExitPlanMode gate can enforce it:
+After completing the assessment, write the **highest** risk level across all options to a result file alongside the plan so the ExitPlanMode gate can enforce it:
 
 ```bash
-# Find the current plan file and compute its hash
+# Write result as sibling of the plan file (.derisk-result instead of .md)
 PLAN_FILE=$(ls -t "${CLAUDE_PROJECT_DIR:-.}/.claude/plans/"*.md 2>/dev/null | head -1)
-PLAN_HASH=$(echo "$PLAN_FILE" | shasum -a 256 | cut -d' ' -f1)
-mkdir -p /tmp/claude-derisk-result
-echo "LOW" > "/tmp/claude-derisk-result/$PLAN_HASH"  # Replace LOW with actual highest risk level
+echo "LOW" > "${PLAN_FILE%.md}.derisk-result"  # Replace LOW with actual highest risk level
 ```
 
 Use the highest risk level found across all analyzed options (NONE, LOW, MEDIUM, or HIGH).

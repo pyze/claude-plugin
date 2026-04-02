@@ -77,11 +77,9 @@ End with: Overall risk level: [NONE/LOW/MEDIUM/HIGH]
 2. DERISK AGENT
    Give it ONLY: the plan file + /derisk command + REPL access
    Output: write to /tmp/plan-risk-assessment.md
-   MUST ALSO write the derisk result file:
+   MUST ALSO write the derisk result file alongside the plan:
    PLAN_FILE=\$(ls -t \"\${CLAUDE_PROJECT_DIR:-.}/.claude/plans/\"*.md 2>/dev/null | head -1)
-   PLAN_HASH=\$(echo \"\$PLAN_FILE\" | shasum -a 256 | cut -d\\x27 \\x27 -f1)
-   mkdir -p /tmp/claude-derisk-result
-   echo [RISK_LEVEL] > \"/tmp/claude-derisk-result/\$PLAN_HASH\"
+   echo [RISK_LEVEL] > \"\${PLAN_FILE%.md}.derisk-result\"
 
 IMPORTANT: agents write to SEPARATE temp files to avoid clobbering.
 They must be SEPARATE agents with no conversation history.
@@ -95,11 +93,8 @@ print(json.dumps({'hookSpecificOutput': {'hookEventName': 'PreToolUse', 'permiss
   exit 0
 fi
 
-# Both markers present — verify derisk result file
-result_dir="/tmp/claude-derisk-result"
-mkdir -p "$result_dir"
-plan_hash=$(echo "$plan_file" | shasum -a 256 | cut -d' ' -f1)
-result_file="$result_dir/$plan_hash"
+# Both markers present — verify derisk result file (sibling of plan file)
+result_file="${plan_file%.md}.derisk-result"
 
 if [ ! -f "$result_file" ]; then
   cat <<'DENY'
@@ -129,7 +124,7 @@ case "$risk_level" in
     python3 -c "
 import json, sys
 level = sys.argv[1]
-reason = 'RISKS REMAIN (' + level + ')\n\nDerisking found risks that could not be reduced to LOW. Do NOT loop /derisk again.\n\nPresent the remaining risks to the user and ask how they want to proceed:\n- Accept the risks and continue\n- Revise the plan to avoid the risky areas\n- Abandon this approach\n\nIf the user accepts the remaining risks, write ACCEPTED to the result file before calling ExitPlanMode again:\n\nPLAN_FILE=\$(ls -t \"\${CLAUDE_PROJECT_DIR:-.}/.claude/plans/\"*.md 2>/dev/null | head -1)\nPLAN_HASH=\$(echo \"\$PLAN_FILE\" | shasum -a 256 | cut -d\\x27 \\x27 -f1)\necho ACCEPTED > \"/tmp/claude-derisk-result/\$PLAN_HASH\"'
+reason = 'RISKS REMAIN (' + level + ')\n\nDerisking found risks that could not be reduced to LOW. Do NOT loop /derisk again.\n\nPresent the remaining risks to the user and ask how they want to proceed:\n- Accept the risks and continue\n- Revise the plan to avoid the risky areas\n- Abandon this approach\n\nIf the user accepts the remaining risks, write ACCEPTED to the derisk result file before calling ExitPlanMode again:\n\nPLAN_FILE=$(ls -t \"${CLAUDE_PROJECT_DIR:-.}/.claude/plans/\"*.md 2>/dev/null | head -1)\necho ACCEPTED > \"${PLAN_FILE%.md}.derisk-result\"'
 print(json.dumps({'hookSpecificOutput': {'hookEventName': 'PreToolUse', 'permissionDecision': 'deny', 'permissionDecisionReason': reason}}))
 " "$risk_level"
     exit 0
