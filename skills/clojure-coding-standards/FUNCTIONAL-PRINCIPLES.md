@@ -308,6 +308,36 @@ The use of `setTimeout` or `requestAnimationFrame` for state synchronization usu
 
 ---
 
+## Avoid `with-redefs` — Even in Tests
+
+`with-redefs` is a code smell even in test code. If you need `with-redefs` to test something, it means the production code has a hidden dependency that should be an explicit parameter.
+
+```clojure
+;; BAD — production code with hidden dependency
+(defn fetch-user [id]
+  (db/query :users {:id id}))  ;; hardcoded db call
+
+;; BAD — test uses with-redefs to work around it
+(deftest test-fetch-user
+  (with-redefs [db/query (fn [& _] {:id 1 :name "test"})]
+    (is (= "test" (:name (fetch-user 1))))))
+
+;; GOOD — production code takes dependency explicitly
+(defn fetch-user [db id]
+  (db/query db :users {:id id}))
+
+;; GOOD — test passes a mock directly
+(deftest test-fetch-user
+  (let [mock-db (reify IDB (query [_ table pred] {:id 1 :name "test"}))]
+    (is (= "test" (:name (fetch-user mock-db 1))))))
+```
+
+**When you encounter `with-redefs`**: don't just use it — fix the composition model. Make the dependency explicit (as a function argument, protocol, or Integrant component). This makes the code both more testable and more decomplected.
+
+**No acceptable uses in production code.** In test code, treat it as a temporary workaround that should be replaced with proper dependency injection.
+
+---
+
 ## Pattern Matching & Destructuring
 
 **Use destructuring to extract data declaratively.**

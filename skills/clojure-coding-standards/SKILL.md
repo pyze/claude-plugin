@@ -143,7 +143,7 @@ This aligns with the error handling hierarchy in `error-handling-patterns/`:
   (is (= 4 (+ 2 2))))
 ```
 
-**Never prefix unused bindings with `_` to silence linter warnings.** Remove the dead code instead. Only use `_` prefix when the parameter is required by a function contract (callback arity, protocol method signature, `with-redefs` mock) and cannot be eliminated.
+**Never prefix unused bindings with `_` to silence linter warnings.** Remove the dead code instead. Only use `_` prefix when the parameter is required by a function contract (callback arity, protocol method signature) and cannot be eliminated.
 
 ```clojure
 ;; ❌ BAD — silences linter but leaves dead code
