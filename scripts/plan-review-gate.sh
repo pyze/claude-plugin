@@ -33,16 +33,58 @@ fi
 
 # If any markers missing → deny with agent dispatch instructions
 if [ -n "$missing" ]; then
-  reason="PLAN REVIEW REQUIRED — missing sections:${missing}\n\nDispatch these agents IN PARALLEL:\n\n1. DECOMPLECTION REVIEW AGENT\n   Give it ONLY: the plan file + decomplection-first-design skill\n   Task: evaluate each deliverable against the Implementation Checklist\n   (no hidden deps, no mixed concerns, testable, reusable, composable, pure)\n   Output: write to /tmp/plan-decomplection-review.md\n\n2. DERISK AGENT\n   Give it ONLY: the plan file + /derisk command + REPL access\n   Task: identify unvalidated assumptions, validate critical ones at REPL\n   Output: write to /tmp/plan-risk-assessment.md\n   with risk level (NONE/LOW/MEDIUM/HIGH) + write derisk result file\n\nIMPORTANT: agents write to SEPARATE temp files to avoid clobbering.\nThey must be SEPARATE agents with no conversation history.\n\nWhen both agents complete:\n1. Append /tmp/plan-decomplection-review.md to the plan as ## Decomplection Review\n2. Append /tmp/plan-risk-assessment.md to the plan as ## Risk Assessment\n3. Call ExitPlanMode again."
-  cat <<DENY
-{
-  "hookSpecificOutput": {
-    "hookEventName": "PreToolUse",
-    "permissionDecision": "deny",
-    "permissionDecisionReason": "$reason"
-  }
-}
-DENY
+  # Build JSON using python3 to handle all escaping correctly
+  python3 -c "
+import json, sys
+missing = sys.argv[1]
+reason = '''PLAN REVIEW REQUIRED — missing sections:''' + missing + '''
+
+Your plan must include these sections to exit plan mode. Dispatch two independent review agents IN PARALLEL to write them.
+
+=== REQUIRED SECTIONS ===
+
+## Decomplection Review
+Format: for each plan deliverable, evaluate against these criteria:
+- No hidden dependencies (all inputs explicit as args)
+- No mixed concerns (one responsibility per component)
+- Easy to test (simple inputs, no complex setup)
+- Reusable (works in REPL, tests, multiple contexts)
+- Composable (output feeds into other functions)
+- Pure or boundary-marked (! suffix for side effects)
+List each deliverable with PASS/FAIL per criterion. Note revision suggestions for failures.
+
+## Risk Assessment
+Format: list each unvalidated assumption with:
+- ASSUMPTION: [what the plan depends on]
+- STATUS: Validated/Unvalidated
+- RISK: NONE/LOW/MEDIUM/HIGH
+- EVIDENCE: [how it was validated, or why it couldn't be]
+End with: Overall risk level: [NONE/LOW/MEDIUM/HIGH]
+
+=== AGENT DISPATCH ===
+
+1. DECOMPLECTION REVIEW AGENT
+   Give it ONLY: the plan file + decomplection-first-design skill
+   Output: write to /tmp/plan-decomplection-review.md
+
+2. DERISK AGENT
+   Give it ONLY: the plan file + /derisk command + REPL access
+   Output: write to /tmp/plan-risk-assessment.md
+   MUST ALSO write the derisk result file:
+   PLAN_FILE=\$(ls -t \"\${CLAUDE_PROJECT_DIR:-.}/.claude/plans/\"*.md 2>/dev/null | head -1)
+   PLAN_HASH=\$(echo \"\$PLAN_FILE\" | shasum -a 256 | cut -d\\x27 \\x27 -f1)
+   mkdir -p /tmp/claude-derisk-result
+   echo [RISK_LEVEL] > \"/tmp/claude-derisk-result/\$PLAN_HASH\"
+
+IMPORTANT: agents write to SEPARATE temp files to avoid clobbering.
+They must be SEPARATE agents with no conversation history.
+
+When both agents complete:
+1. Append /tmp/plan-decomplection-review.md to the plan as ## Decomplection Review
+2. Append /tmp/plan-risk-assessment.md to the plan as ## Risk Assessment
+3. Call ExitPlanMode again.'''
+print(json.dumps({'hookSpecificOutput': {'hookEventName': 'PreToolUse', 'permissionDecision': 'deny', 'permissionDecisionReason': reason}}))
+" "$missing"
   exit 0
 fi
 
@@ -74,16 +116,12 @@ case "$risk_level" in
     ;;
   *)
     rm -f "$result_file"
-    reason="RISKS REMAIN (${risk_level})\n\nDerisking found risks that could not be reduced to LOW. Do NOT loop /derisk again.\n\nPresent the remaining risks to the user and ask how they want to proceed:\n- Accept the risks and continue\n- Revise the plan to avoid the risky areas\n- Abandon this approach\n\nIf the user accepts the remaining risks, write ACCEPTED to the result file before calling ExitPlanMode again:\n\nPLAN_FILE=\$(ls -t \\\"\${CLAUDE_PROJECT_DIR:-.}/.claude/plans/\\\"*.md 2>/dev/null | head -1)\nPLAN_HASH=\$(echo \\\"\$PLAN_FILE\\\" | shasum -a 256 | cut -d' ' -f1)\necho ACCEPTED > \\\"/tmp/claude-derisk-result/\$PLAN_HASH\\\""
-    cat <<DENY
-{
-  "hookSpecificOutput": {
-    "hookEventName": "PreToolUse",
-    "permissionDecision": "deny",
-    "permissionDecisionReason": "$reason"
-  }
-}
-DENY
+    python3 -c "
+import json, sys
+level = sys.argv[1]
+reason = 'RISKS REMAIN (' + level + ')\n\nDerisking found risks that could not be reduced to LOW. Do NOT loop /derisk again.\n\nPresent the remaining risks to the user and ask how they want to proceed:\n- Accept the risks and continue\n- Revise the plan to avoid the risky areas\n- Abandon this approach\n\nIf the user accepts the remaining risks, write ACCEPTED to the result file before calling ExitPlanMode again:\n\nPLAN_FILE=\$(ls -t \"\${CLAUDE_PROJECT_DIR:-.}/.claude/plans/\"*.md 2>/dev/null | head -1)\nPLAN_HASH=\$(echo \"\$PLAN_FILE\" | shasum -a 256 | cut -d\\x27 \\x27 -f1)\necho ACCEPTED > \"/tmp/claude-derisk-result/\$PLAN_HASH\"'
+print(json.dumps({'hookSpecificOutput': {'hookEventName': 'PreToolUse', 'permissionDecision': 'deny', 'permissionDecisionReason': reason}}))
+" "$risk_level"
     exit 0
     ;;
 esac
