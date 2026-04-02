@@ -47,3 +47,24 @@ teardown() {
   run bash "$SCRIPT"
   echo "$output" | python3 -m json.tool > /dev/null
 }
+
+# --- Happy path: issue exists + plan file → allows through silently ---
+
+@test "issue exists + plan file — allows through with no deny" {
+  echo "- #42 — test issue (plan)" > "$CLAUDE_PROJECT_DIR/.claude/issue-stack.md"
+  mkdir -p "$CLAUDE_PROJECT_DIR/.claude/plans"
+  echo "# My Plan" > "$CLAUDE_PROJECT_DIR/.claude/plans/test-plan.md"
+  run bash "$SCRIPT"
+  [ "$status" -eq 0 ]
+  # Should NOT contain a deny
+  ! echo "$output" | grep -q '"permissionDecision": "deny"'
+}
+
+# --- Happy path: issue exists + no plan file → allows through ---
+
+@test "issue exists + no plan file — allows through" {
+  echo "- #42 — test issue (plan)" > "$CLAUDE_PROJECT_DIR/.claude/issue-stack.md"
+  run bash "$SCRIPT"
+  [ "$status" -eq 0 ]
+  [ -z "$output" ]
+}

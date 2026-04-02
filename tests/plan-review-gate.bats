@@ -114,6 +114,24 @@ result_file_for() {
   [ -z "$output" ]
 }
 
+# --- Both markers + LOW risk + issue stack: outputs instruction ---
+
+@test "both markers + LOW risk + issue stack — outputs PLAN APPROVED with issue number" {
+  echo "- #42 — test issue (do)" > "$CLAUDE_PROJECT_DIR/.claude/issue-stack.md"
+  local plan
+  plan=$(create_plan "$(printf '# Plan\n## Decomplection Review\nAll pass\n## Risk Assessment\nLOW')")
+  local rf
+  rf=$(result_file_for "$plan")
+  mkdir -p "$(dirname "$rf")"
+  echo "LOW" > "$rf"
+
+  run bash "$SCRIPT"
+  [ "$status" -eq 0 ]
+  echo "$output" | grep -q "PLAN APPROVED"
+  echo "$output" | grep -q "#42"
+  echo "$output" | grep -q "gh issue view"
+}
+
 # --- Both markers + HIGH risk: deny with escalation ---
 
 @test "both markers + HIGH risk — denies with RISKS REMAIN" {
