@@ -6,6 +6,13 @@ set -euo pipefail
 # If missing → deny with instructions to dispatch review agents.
 # If present → verify derisk result file for risk level.
 
+# Get active issue number for messages
+STACK="${CLAUDE_PROJECT_DIR:-.}/.claude/issue-stack.md"
+ISSUE=""
+if [ -f "$STACK" ]; then
+  ISSUE=$(grep '^- #' "$STACK" | head -1 | grep -o '#[0-9]*' | tr -d '#' || true)
+fi
+
 # Find most recent plan file
 plan_dir="${CLAUDE_PROJECT_DIR:-.}/.claude/plans"
 plan_file=$(ls -t "$plan_dir"/*.md 2>/dev/null | head -1 || true)
@@ -112,6 +119,9 @@ risk_level=$(cat "$result_file" | tr '[:lower:]' '[:upper:]')
 case "$risk_level" in
   NONE|LOW|ACCEPTED)
     rm -f "$result_file"
+    if [ -n "$ISSUE" ]; then
+      echo "PLAN APPROVED — transitioning to Do phase. Before dispatching subagents, read the plan from GitHub issue #$ISSUE (gh issue view $ISSUE --comments). The issue comment contains the full plan + PDCA reminder. Include the plan content and Core Assumptions in each subagent's task description."
+    fi
     exit 0
     ;;
   *)
