@@ -98,7 +98,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/scripts/code-smell-check.sh"
+            "command": "if echo \"$CLAUDE_TOOL_INPUT\" | grep -qE '\\(atom |\\(volatile! |\\(ref |\\(agent |\\(defonce '; then if ! echo \"$CLAUDE_TOOL_INPUT\" | grep -qi 'APPROVED'; then echo 'WARNING: Mutable state introduced without approval comment. Per clojure-coding-standards, atom/volatile!/ref/agent require explicit user approval. Add a MUTATION APPROVED comment or ask the user.'; fi; fi"
           }
         ]
       }
