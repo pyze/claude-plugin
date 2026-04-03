@@ -99,6 +99,14 @@
           {
             "type": "command",
             "command": "if echo \"$CLAUDE_TOOL_INPUT\" | grep -qE '\\(atom |\\(volatile! |\\(ref |\\(agent |\\(defonce '; then if ! echo \"$CLAUDE_TOOL_INPUT\" | grep -qi 'APPROVED'; then echo 'WARNING: Mutable state introduced without approval comment. Per clojure-coding-standards, atom/volatile!/ref/agent require explicit user approval. Add a MUTATION APPROVED comment or ask the user.'; fi; fi"
+          },
+          {
+            "type": "command",
+            "command": "if echo \"$CLAUDE_TOOL_INPUT\" | grep -qE 'requestAnimationFrame|js/requestAnimationFrame|\\.requestAnimationFrame'; then echo 'WARNING: requestAnimationFrame is a code smell — it indicates a data flow problem, not a timing problem. Fix the architecture: ensure state updates trigger re-renders through the proper reactive pipeline. See replicant-ui LIFECYCLE.md and clojure-coding-standards FUNCTIONAL-PRINCIPLES.md.'; fi"
+          },
+          {
+            "type": "command",
+            "command": "if echo \"$CLAUDE_TOOL_INPUT\" | grep -qE 'setTimeout|js/setTimeout|\\.setTimeout'; then echo 'WARNING: setTimeout for state synchronization is a code smell — it masks a race condition or missing state transition. Fix the root cause. See clojure-coding-standards FUNCTIONAL-PRINCIPLES.md.'; fi"
           }
         ]
       }
