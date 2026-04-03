@@ -9,10 +9,14 @@ SCRIPT="$BATS_TEST_DIRNAME/../scripts/plan-review-gate.sh"
 setup() {
   export CLAUDE_PROJECT_DIR="$(mktemp -d)"
   mkdir -p "$CLAUDE_PROJECT_DIR/.claude/plans"
+  # Override HOME so the script doesn't pick up real user plan files
+  export HOME="$(mktemp -d)"
+  mkdir -p "$HOME/.claude/plans"
 }
 
 teardown() {
   rm -rf "$CLAUDE_PROJECT_DIR"
+  rm -rf "$HOME"
 }
 
 create_plan() {

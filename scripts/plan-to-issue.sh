@@ -36,8 +36,8 @@ DENY
   exit 0
 fi
 
-# Find most recent plan file
-plan_file=$(ls -t "${CLAUDE_PROJECT_DIR:?CLAUDE_PROJECT_DIR not set}/.claude/plans/"*.md 2>/dev/null | head -1 || true)
+# Find most recent plan file — check both user-level and project-level directories
+plan_file=$(ls -t "$HOME/.claude/plans/"*.md "${CLAUDE_PROJECT_DIR:?CLAUDE_PROJECT_DIR not set}/.claude/plans/"*.md 2>/dev/null | head -1 || true)
 
 # No plan file → allow through
 if [ -z "$plan_file" ]; then
