@@ -26,6 +26,14 @@ done
 TITLE=$(gh issue view "$ISSUE" --json title -q '.title' 2>/dev/null || echo "unknown")
 cat <<EOF
 PDCA PLAN PHASE (#$ISSUE: $TITLE):
+
+=== KEY PRINCIPLES — plan with these in mind ===
+- TDD: Every deliverable should specify tests BEFORE implementation. Plan the test, then the code.
+- DECOMPLECT: Each component should have one role, one concept (simple = one fold, not interleaved). All dependencies explicit. State is never simple — minimize it.
+- DDRY: Shared code must be composable, not just not-repeated. If an extraction takes a mode parameter, split it.
+- FAIL-FAST: Fix the source of missing data. No fallback code paths in production.
+===
+
 Write your plan using plan mode. It will be automatically posted to the GitHub issue when you exit plan mode.
 
 Your plan MUST include these sections to pass the exit gate:
