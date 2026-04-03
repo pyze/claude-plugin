@@ -1,6 +1,6 @@
 ---
 name: decomplection-first-design
-description: Decomplection, DDRY, and simple-over-easy design (Rich Hickey). Use when making design decisions, evaluating trade-offs, choosing between approaches, extracting shared code (DDRY), or reviewing for hidden dependencies and entanglement.
+description: "Decomplection per Rich Hickey: simple = one fold (objective, about the artifact), easy = nearby (subjective, about the programmer). Complect = to braid together. State is never simple. DDRY = extracted code must be composable, not just not-repeated. Use when making design decisions, evaluating trade-offs, choosing approaches, extracting shared code, or reviewing for entanglement."
 ---
 
 # Decomplection-First Design Skill

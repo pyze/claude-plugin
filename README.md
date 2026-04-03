@@ -30,7 +30,7 @@ Or add to your project's `.claude/settings.json`:
 | `clojurescript-cross-platform-code` | Write cross-platform ClojureScript code for JVM TDD |
 | `clojurescript-shadow-cljs` | Build ClojureScript with Shadow-CLJS compilation and hot reload |
 | `continuous-eql` | Continuous EQL — Missionary Signal Graph Architecture |
-| `decomplection-first-design` | Decomplection, DDRY, and simple-over-easy design (Rich Hickey) |
+| `decomplection-first-design` | Decomplection per Rich Hickey: simple = one fold (objective, about the artifact), easy = nearby (subjective, about the programmer) |
 | `documentation-maintenance` | Follow documentation placement and maintenance guidelines |
 | `error-handling-patterns` | Design error handling with fail-fast philosophy, Truss assertions, and Telemere structured logging |
 | `gemini-sdk-clojure` | Use when writing Clojure code that calls the Google Gemini Java SDK (com.google.genai), adding function declarations, building schemas, handling function calls, or debugging varargs interop errors |
