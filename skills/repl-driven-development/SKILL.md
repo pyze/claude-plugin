@@ -1,6 +1,6 @@
 ---
 name: repl-driven-development
-description: Follow REPL-driven development workflow. Use when building features incrementally, testing assumptions, or integrating with TDD.
+description: TDD and REPL-driven development workflow. Use when writing tests first (test-driven development), building features incrementally, testing assumptions at the REPL, or planning test-before-implementation work.
 ---
 
 # REPL-Driven Development

@@ -30,7 +30,7 @@ Or add to your project's `.claude/settings.json`:
 | `clojurescript-cross-platform-code` | Write cross-platform ClojureScript code for JVM TDD |
 | `clojurescript-shadow-cljs` | Build ClojureScript with Shadow-CLJS compilation and hot reload |
 | `continuous-eql` | Continuous EQL — Missionary Signal Graph Architecture |
-| `decomplection-first-design` | Apply simple-over-easy design philosophy |
+| `decomplection-first-design` | Decomplection, DDRY, and simple-over-easy design (Rich Hickey) |
 | `documentation-maintenance` | Follow documentation placement and maintenance guidelines |
 | `error-handling-patterns` | Design error handling with fail-fast philosophy, Truss assertions, and Telemere structured logging |
 | `gemini-sdk-clojure` | Use when writing Clojure code that calls the Google Gemini Java SDK (com.google.genai), adding function declarations, building schemas, handling function calls, or debugging varargs interop errors |
@@ -42,7 +42,7 @@ Or add to your project's `.claude/settings.json`:
 | `pr-document` | Use when preparing a pull request, filling out the PR template, or when the user says /pr-document |
 | `pyramid-state-management` | Manage normalized state with Pyramid |
 | `reitit-routing` | Configure server and client routing with Reitit |
-| `repl-driven-development` | Follow REPL-driven development workflow |
+| `repl-driven-development` | TDD and REPL-driven development workflow |
 | `repl-semantic-search` | Use REPL introspection as semantic search over Clojure codebases |
 | `replicant-ui` | Build UI components with Replicant vDOM and hiccup syntax |
 | `rewrite-clj-transforms` | Structural Clojure code modification via bb + rewrite-clj |

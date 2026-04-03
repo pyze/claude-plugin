@@ -1,6 +1,6 @@
 ---
 name: decomplection-first-design
-description: Apply simple-over-easy design philosophy. Use when making design decisions, evaluating trade-offs, or choosing between approaches.
+description: Decomplection, DDRY, and simple-over-easy design (Rich Hickey). Use when making design decisions, evaluating trade-offs, choosing between approaches, extracting shared code (DDRY), or reviewing for hidden dependencies and entanglement.
 ---
 
 # Decomplection-First Design Skill
