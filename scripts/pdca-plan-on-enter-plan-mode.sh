@@ -41,13 +41,18 @@ Your plan MUST include these sections to pass the exit gate:
 ## Decomplection Review
 ## Risk Assessment
 
-You do NOT write these yourself. When you call ExitPlanMode, if these sections are missing, you will be instructed to dispatch two independent review agents (in parallel) that cold-read your plan and write these sections. This ensures unbiased review — the agents have no conversation history or attachment to your design.
+BEFORE calling ExitPlanMode, dispatch two independent review agents IN PARALLEL:
 
-The agents will:
-1. Evaluate decomplection against the skill's Implementation Checklist
-2. Run /derisk to validate assumptions at the REPL
+1. DECOMPLECTION REVIEW AGENT — give it ONLY the plan file + decomplection-first-design skill.
+   Writes to /tmp/plan-decomplection-review.md.
+2. DERISK AGENT — give it ONLY the plan file + /derisk command + REPL access.
+   Writes to /tmp/plan-risk-assessment.md. Must include "Overall risk level: [NONE/LOW/MEDIUM/HIGH]".
 
-Plans missing these sections will be blocked from exiting plan mode.
+These must be SEPARATE agents with no conversation history — this ensures unbiased review.
+
+When both complete, append their output to your plan as ## Decomplection Review and ## Risk Assessment, then call ExitPlanMode.
+
+Do NOT call ExitPlanMode without these sections — it will be denied.
 Plans with MEDIUM/HIGH risk will be escalated to the user.
 
 REPL exploration is always allowed in every PDCA phase — it never changes production code. Use it freely to validate assumptions and test data shapes.
