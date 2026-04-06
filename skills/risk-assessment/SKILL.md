@@ -27,7 +27,7 @@ NOT validated                     → MEDIUM (at minimum)
 NOT validated + high impact       → HIGH
 ```
 
-**There is no shortcut.** "I think it's probably fine" is not validation. Validation means: checked at the REPL, grepped the codebase, read the source, or confirmed with the user.
+**There is no shortcut.** "I think it's probably fine" is not validation. Validation means: checked with available tools (LSP, REPL, search), read the source, or confirmed with the user.
 
 ---
 
@@ -37,8 +37,7 @@ If validating an assumption takes less than 30 seconds, **validate it now**. Don
 
 | Validation method | Typical cost | Examples |
 |------------------|-------------|---------|
-| Grep/Glob | < 5 seconds | "Is this function used elsewhere?" "Is this namespace required by anything?" |
-| REPL evaluation | < 30 seconds | "Does this API return the expected shape?" "Does this protocol have this method?" |
+| Semantic search (LSP, REPL) | < 30 seconds | "Is this function used elsewhere?" "Does this API return the expected shape?" |
 | Read source | < 1 minute | "What does this function actually do?" "What config does this key expect?" |
 | Run tests | 1-5 minutes | "Do existing tests still pass with this change?" |
 | User question | Variable | "Is this the intended behavior?" "Should this be backwards-compatible?" |
@@ -164,12 +163,12 @@ GOOD:
   - ASSUMPTION: chat_panel.cljc is dead code (not referenced anywhere)
     - STATUS: Validated
     - RISK: NONE
-    - EVIDENCE: grep -r "chat.panel" src/ returns 0 results; no route references it
+    - EVIDENCE: LSP find_references returns 0 results; no route references it
 
   - ASSUMPTION: icons.cljc is only used by chat_panel.cljc
     - STATUS: Validated
     - RISK: NONE
-    - EVIDENCE: grep -r "icons" src/ returns only chat_panel.cljc
+    - EVIDENCE: LSP find_references for icons namespace returns only chat_panel.cljc
 ```
 
 When you write an assumption, scan it for embedded claims. Parenthetical assertions like "(which is dead)", "(should be empty)", "(only used internally)" are hidden assumptions that need their own validation.
@@ -217,7 +216,7 @@ If validation genuinely can't be done during planning (requires running the full
 - ASSUMPTION: icons.cljc is only used by chat_panel.cljc
   - STATUS: Validated
   - RISK: NONE
-  - EVIDENCE: grep -r "icons" src/ returns only chat_panel.cljc references
+  - EVIDENCE: LSP find_references for icons namespace returns only chat_panel.cljc
 ```
 
 ---
