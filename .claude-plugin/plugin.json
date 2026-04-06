@@ -1,7 +1,7 @@
 {
   "name": "claude-plugin",
   "description": "Clojure development skills, coding standards, and workflow infrastructure for Claude Code",
-  "version": "4.7.0",
+  "version": "4.8.0",
   "author": {"name": "Mark Addleman"},
   "homepage": "https://github.com/pyze/claude-plugin",
   "repository": "https://github.com/pyze/claude-plugin",
