@@ -171,23 +171,32 @@ DRY alone is dangerous — it creates abstractions that braid unrelated concerns
 Any mutable state (atom, volatile, ref, agent) is a decomplection violation unless explicitly approved by the user. Before introducing ANY mutable construct:
 
 1. **STOP** - Do not write the code yet
-2. **ASK** - Request explicit user approval
-3. **JUSTIFY** - Explain why pure design won't work
-4. **DOCUMENT** - Include approval comment in code
+2. **ASK** - Present each atom to the user individually with a justification
+3. **JUSTIFY** - Explain why a pure design won't work for this specific case
+4. **WAIT** - The user decides. Do not self-approve.
+5. **DOCUMENT** - After user approves, include approval comment in code
+
+**Claude cannot approve mutable state.** Only the user can. Batch-stamping existing atoms with `MUTATION APPROVED` is not approval — it's rubber-stamping. Each atom must be individually justified and individually approved:
+
+- Why can't this be a pure value?
+- Could this be derived from existing state instead?
+- Could this be an event or a parameter instead of stored state?
+- What is the blast radius of this mutable state?
 
 ```clojure
 ;; ❌ VIOLATION - atom without user approval
 (defonce registry (atom {}))
 
-;; ❌ VIOLATION - volatile without user approval
-(defn compute [data]
-  (let [result (volatile! [])]
-    ...))
+;; ❌ VIOLATION - Claude self-approved (not valid)
+;; MUTATION APPROVED: needed for state management
+(defonce registry (atom {}))
 
 ;; ✅ AFTER USER APPROVAL
-;; MUTATION APPROVED (2025-02-05) by [user]:
+;; MUTATION APPROVED (2025-02-05) by mark:
 ;; Registry must be mutable for hot-reload component registration.
 ;; Isolated to registry module; all reads go through get-renderer.
+;; Pure alternative considered: passing registry as arg — rejected because
+;; hot-reload requires stable reference across system restarts.
 (defonce registry (atom {}))
 ```
 
