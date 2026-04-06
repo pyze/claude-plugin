@@ -46,6 +46,7 @@ Or add to your project's `.claude/settings.json`:
 | `repl-semantic-search` | Use REPL introspection as semantic search over Clojure codebases |
 | `replicant-ui` | Build UI components with Replicant vDOM and hiccup syntax |
 | `rewrite-clj-transforms` | Structural Clojure code modification via bb + rewrite-clj |
+| `risk-assessment` | Evaluate risk levels for plan assumptions and code changes |
 | `specification-first-development` | Write specifications before code to clarify requirements |
 | `wemble-gemini` | Use when using Wemble's Gemini integration - client lifecycle, chat-turn, ask/ask-json/ask-text, tool data maps, context caching, ->schema DSL, and schema compatibility validation |
 

@@ -7,6 +7,8 @@ description: "Risk analysis: identify options, validate assumptions at REPL"
 
 Report implementation options with their unvalidated assumptions, then validate critical assumptions at the REPL.
 
+**See [risk-assessment](../skills/risk-assessment/) for how to evaluate and assign risk levels.** Key rule: unvalidated assumptions are MEDIUM minimum — never LOW.
+
 This command helps identify what needs validation before implementing plans by analyzing multiple approaches and highlighting unsupported assumptions for each option. Particularly useful for state management decisions, effect ordering, and API integration patterns.
 
 ## How It Works
