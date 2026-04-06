@@ -143,6 +143,39 @@ The overall level is the **max** of all individual levels. One HIGH assumption m
 
 ---
 
+## Core Rule: No Compound Assumptions
+
+An assumption that depends on another unvalidated assumption is a **chain**. Each link multiplies the risk.
+
+```
+BAD:
+  - ASSUMPTION: icons.cljc is only used by chat_panel.cljc (which is dead)
+    - STATUS: Unvalidated
+    - RISK: LOW
+
+Problem: "which is dead" is ITSELF an unvalidated assumption. If chat_panel.cljc
+is alive, icons.cljc is alive, and deleting it breaks the build.
+```
+
+**Break chains into individual assumptions.** Each must be validated independently:
+
+```
+GOOD:
+  - ASSUMPTION: chat_panel.cljc is dead code (not referenced anywhere)
+    - STATUS: Validated
+    - RISK: NONE
+    - EVIDENCE: grep -r "chat.panel" src/ returns 0 results; no route references it
+
+  - ASSUMPTION: icons.cljc is only used by chat_panel.cljc
+    - STATUS: Validated
+    - RISK: NONE
+    - EVIDENCE: grep -r "icons" src/ returns only chat_panel.cljc
+```
+
+When you write an assumption, scan it for embedded claims. Parenthetical assertions like "(which is dead)", "(should be empty)", "(only used internally)" are hidden assumptions that need their own validation.
+
+---
+
 ## Core Rule: Risk Assessment Is Not a TODO List
 
 A risk assessment resolves assumptions — it does not defer them. If the evidence field says "need to check X," "will verify during implementation," or "should grep before deleting," you haven't assessed the risk. You've written a TODO.
