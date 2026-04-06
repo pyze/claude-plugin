@@ -202,6 +202,9 @@ When solving async/event problems, use existing application state instead of tim
 | `requestAnimationFrame` for state sync | Papers over missing render cycle | Ensure state update triggers re-render |
 | Timer-based debounce for dedup | Unreliable under varying load | Content-hash comparison or idempotent operations |
 | `Thread/sleep` in watchers | Blocks thread, misses rapid changes | Content-hash dedup with immediate processing |
+| `(name :keyword)` / `(str :keyword)` | Converting keywords/symbols to strings loses identity semantics | Keep as keywords — use keyword lookup, keyword namespaces, keyword equality |
+
+**Keyword/symbol to string conversion** is a code smell. If you're calling `(name :foo)` or `(str :foo)` to build a string, you're likely working around a boundary that should accept keywords directly. Keywords are interned, fast to compare, and self-documenting. Strings are opaque. Keep data as keywords throughout; convert only at system boundaries (JSON serialization, HTTP headers, external APIs).
 
 The use of `setTimeout` or `requestAnimationFrame` for state synchronization usually indicates papering over a deeper bug — a missing state transition, an event not being dispatched, or a render cycle not being triggered. Fix the root cause instead.
 
