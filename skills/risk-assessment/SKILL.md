@@ -143,6 +143,24 @@ The overall level is the **max** of all individual levels. One HIGH assumption m
 
 ---
 
+## Core Rule: Risk Assessment Is Not a TODO List
+
+A risk assessment resolves assumptions — it does not defer them. If the evidence field says "need to check X," "will verify during implementation," or "should grep before deleting," you haven't assessed the risk. You've written a TODO.
+
+**Do the check now.** The purpose of derisking is to validate assumptions *during planning*, so you go into implementation with known risks, not unknown ones. If you can grep, grep now. If you can REPL, REPL now. If you need to ask the user, ask now.
+
+```
+BAD:
+  - EVIDENCE: Need to grep before deleting       ← This is a TODO, not evidence
+
+GOOD:
+  - EVIDENCE: grep -r "icons" src/ returns only chat_panel.cljc references   ← This is evidence
+```
+
+If validation genuinely can't be done during planning (requires running the full system, needs production data, depends on external service), document **why** it can't be done — and the risk stays MEDIUM or higher.
+
+---
+
 ## Anti-Patterns
 
 **Wishful risk assessment:**
