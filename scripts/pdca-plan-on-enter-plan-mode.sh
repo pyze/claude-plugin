@@ -5,6 +5,9 @@
 
 set -euo pipefail
 
+# Clean up stale review agent temp files from previous plan cycles
+rm -f /tmp/plan-decomplection-review.md /tmp/plan-risk-assessment.md
+
 STACK="$CLAUDE_PROJECT_DIR/.claude/issue-stack.md"
 [ -f "$STACK" ] || exit 0
 
