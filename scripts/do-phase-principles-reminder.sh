@@ -18,7 +18,7 @@ cat <<'EOF'
 1. TDD: Write/update test BEFORE implementation. No src/ edit without test/ edit first.
 2. FAIL-FAST: Fix the SOURCE. Never (or x default) for missing data. Never keep old code paths alive during refactoring. Cut over cleanly.
 3. DECOMPLECT: All deps explicit as args. No hidden state. One concern per fn. Ask before atom/ref.
-4. ASSUMPTIONS: When something is unexpected, ask: does the plan still make sense? If no → STOP, report, return to Plan. Do not work around it.
+4. ASSUMPTIONS: When something is unexpected — a reference works differently, a dependency behaves differently, a data shape doesn't match — STOP. Do not note it and continue. Do not adapt. Report and return to Plan.
 5. REPL: Always safe — use it to validate before writing code.
 ===
 EOF

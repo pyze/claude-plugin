@@ -93,6 +93,14 @@ Execute the plan by dispatching sub-agents for each task. Update issue checkboxe
 
 **Halt-on-violated-assumptions:** Before or during each task, verify the core assumptions listed in the plan. If any assumption is wrong, **STOP immediately** — do not attempt workarounds. Post a comment explaining which assumption was violated and what was actually observed, then transition back to `pdca:plan`.
 
+**What counts as a violated assumption:**
+- You read a reference implementation and discover it works differently than the plan describes
+- A dependency, API, or data shape doesn't match what the plan expects
+- The plan says "follow the pattern from X" but X's pattern is fundamentally different
+- Any fact the plan relies on turns out to be false
+
+**The natural temptation is to adapt and keep going. Do not.** The plan was approved as a whole — if its foundation is wrong, the entire approach may need rethinking. Noting "I see this works differently" and continuing is the failure mode. STOP means stop.
+
 ### Check (`pdca:check`)
 
 After all Do-phase tasks are complete, **enter plan mode** and produce a gap analysis as a comment on the issue:
