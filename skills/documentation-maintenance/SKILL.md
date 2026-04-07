@@ -59,50 +59,9 @@ This skill covers: **Where to put documentation** - placement decisions, memorie
 
 Discoveries and insights go to `memories/` using your project's memory system.
 
-## When to Update Documentation
-
-### During Development
-
-Create a memory entry immediately when you:
-- Discover a new pattern worth documenting
-- Learn a tool behavior not previously known
-- Find a gotcha or edge case
-- Make an architectural decision
-
-**Threshold**: Store when effort > 1 attempt AND likely to recur.
-
-### After Fixing a Bug
-
-Update relevant skill if:
-- Bug was related to poorly documented area
-- Documentation led developers to the bug
-- Prevention strategy should be documented
-
-### When Removing Information
-
-**Always get user approval** before removing documentation.
-Provide evidence (actual test, skill that supersedes it, etc.)
-
 ## Documentation Standards
 
-### Checklist
-
-Before committing documentation changes:
-
-- [ ] **Correctness**: Information is accurate and current
-- [ ] **Clarity**: Examples are tested and work
-- [ ] **Placement**: Information is in correct location
-- [ ] **Links**: All internal links are valid
-- [ ] **Completeness**: Prerequisites and outcomes are clear
-- [ ] **Consistency**: Follows project style
-
-### Standards
-
-| Quality | Good | Avoid |
-|---------|------|-------|
-| **Clarity** | Clear problem statement, concrete examples | Vague descriptions, "it's complicated" |
-| **Accuracy** | Tested code examples, correct syntax | Pseudocode as real code, "might work" |
-| **Completeness** | Prerequisites, outcomes, gotchas | Assuming knowledge, skipping error cases |
+Keep docs accurate and complete. For learning persistence decisions, see [learning-capture](../learning-capture/).
 
 ## Issue Authoring
 

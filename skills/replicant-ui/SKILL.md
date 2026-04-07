@@ -154,8 +154,8 @@ WRONG:   [[[:action]]]   -> Extra nesting, dispatch fails silently
 ## Adding a New Component
 
 ```clojure
-(defn my-component [{:keys [title items]} db]
-  [:div.my-component
+(defn task-list [{:keys [title items]} db]
+  [:div.task-list
    [:h2 title]
    [:ul
     (for [item items]
@@ -187,7 +187,7 @@ WRONG:   [[[:action]]]   -> Extra nesting, dispatch fails silently
 ### Conditional Rendering
 
 ```clojure
-(defn my-component [{:keys [show?]} db]
+(defn user-card [{:keys [show?]} db]
   [:div
    (when show?
      [:p "Visible content"])

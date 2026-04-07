@@ -54,45 +54,7 @@ Describe the code **as it is now**. Mirror the Before section — same functions
 
 ### Review Dimensions
 
-Each dimension requires **active investigation**, not just description of what you did.
-
-#### Decomplection Analysis
-
-Examine changed code for interleaved concerns. Use the decomplection-first-design skill if available. Check:
-- Does any function mix data transformation with side effects?
-- Are "what" and "how" separated? (e.g., resolver declaration vs fetch implementation)
-- Are state, identity, and value conflated?
-
-#### Redundancy — Codebase-Wide
-
-**Search the full codebase**, not just changed files:
-
-```
-Grep for similar function names, patterns, abstractions
-Check if a helper you wrote already exists elsewhere
-Identify parallel implementations of the same concept
-```
-
-Flag anything that should be consolidated. This is the most commonly skipped section — do not skip it.
-
-#### Code Quality — Bad Patterns
-
-Flag anti-patterns in changed code: mutation where unnecessary, missing error handling at system boundaries, overly complex conditionals, God functions.
-
-#### Alignment — Code, Docs, Mental Model
-
-Check three layers:
-- **Project-wide docs**: Does CLAUDE.md, any skill, or analyst doc need updating?
-- **PR-wide docs**: Does the After section accurately reflect the code?
-- **Executable examples**: Should any new behavior have a Primer-style runnable example?
-
-#### Logic & Correctness
-
-List tests added/modified. Identify coverage gaps worth brainstorming with the human. Check if Claude-facing docs (skills, memory) were updated for new patterns.
-
-#### Visual & UX
-
-For UI changes: attach before/after screenshots or Playwright snapshots. Note anything warranting attention at the next regular visual review cadence.
+For code quality dimensions to investigate before documenting, see [decomplection-first-design](../decomplection-first-design/) and [clojure-coding-standards](../clojure-coding-standards/).
 
 ## Output
 

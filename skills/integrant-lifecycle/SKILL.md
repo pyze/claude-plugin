@@ -295,33 +295,6 @@ user=> (prep)  ; Load config without starting
 user=> config  ; Inspect the config
 ```
 
-### Legacy Manual Workflow
-
-For projects not using integrant-repl:
-
-```clojure
-;; dev/user.clj (manual approach)
-(ns user
-  (:require [integrant.core :as ig]
-            [myapp.core :as core]))
-
-(defonce system (atom nil))
-
-(defn start []
-  (reset! system (ig/init (core/config))))
-
-(defn stop []
-  (when @system
-    (ig/halt! @system)
-    (reset! system nil)))
-
-(defn reset []
-  (stop)
-  (start))
-```
-
-**Recommendation**: Use integrant-repl for development - it handles namespace reloading automatically.
-
 ## Accessing Services in Handlers
 
 ```clojure

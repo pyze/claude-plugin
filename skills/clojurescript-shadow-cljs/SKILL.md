@@ -150,24 +150,19 @@ Shadow-CLJS automatically reloads code when files change.
 
 ### Preserving State (CRITICAL)
 
-```clojure
-;; Use defonce for state atoms - survives reload
-(defonce db-atom (atom {}))
-
-;; Regular def gets reset on reload
-(def this-resets-on-reload "value")
-```
-
-**CRITICAL**: `defonce` alone is NOT sufficient! After-load hooks can still reset state.
+Use `defonce` with a nil-check guard. `defonce` alone is NOT sufficient -- after-load hooks can still reset state.
 
 ```clojure
-;; ✅ CORRECT - Guard initialization with nil check
+;; CORRECT - defonce + nil-check guard
 (defonce app-state (atom nil))
 
 (defn init-app []
   (when (nil? @app-state)           ;; Only init if not already initialized
     (reset! app-state (initial-db)))
   (render! app-state))
+
+;; WRONG - regular def resets on every reload
+(def this-resets-on-reload "value")
 ```
 
 **See memories/** for related learnings on hot reload patterns.

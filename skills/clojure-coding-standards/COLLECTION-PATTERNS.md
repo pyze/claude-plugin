@@ -247,6 +247,15 @@ xf/window         ; Sliding/tumbling windows
   (into [] (comp (filter :active?) (map :user-id)) users))
 ```
 
+### REPL Tip: Measuring Eager Evaluation Cost
+
+```clojure
+;; Use time to measure transducer pipeline cost at the REPL
+(time (into [] xf coll))
+;; "Elapsed time: 12.345 msecs"
+;; => result vector (also useful for verifying output)
+```
+
 ---
 
 ## Performance Characteristics

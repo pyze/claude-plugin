@@ -146,3 +146,19 @@ Plain `{}` uses Pyramid's default ident function which normalizes ANY map with a
 ```
 
 Use `p/pull` for flat entity attributes; use `get-in` when the value contains lists, parameterized queries, or 2-element keyword vectors that could be misinterpreted as lookup refs.
+
+---
+
+## REPL Inspection
+
+Quick commands to explore Pyramid state at the REPL:
+
+```clojure
+;; See all entity idents (top-level keys are ident vectors)
+(keys db)
+;; => ([:doc/id "sales-q1"] [:control/id :my-ns/region] [:ui/id :singleton] ...)
+
+;; Inspect a specific entity's structure
+(p/pull db [:doc/id "sales-q1"] [:doc/id :doc/title :doc/content])
+;; => {:doc/id "sales-q1" :doc/title "Sales Q1" :doc/content "..."}
+```

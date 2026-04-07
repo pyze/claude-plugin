@@ -263,25 +263,7 @@ Implementation reveals issues?
       (is (string? (:auth-token result))))))
 ```
 
-### Specification Validation with Truss
-
-Use Truss assertions to enforce specification contracts at runtime:
-
-```clojure
-;; Specification defines inputs
-{:specification/inputs [{:name "email" :type :string :required true}]}
-
-;; Implementation validates against spec
-(defn authenticate-user
-  "Implements specification: user-auth-001"
-  [{:keys [email password]}]
-  (have! [:and string? (complement str/blank?)] email
-         :data {:type :spec/invalid-email :spec-id "user-auth-001"})
-  ;; Implementation...
-  )
-```
-
-See [error-handling-patterns skill](../error-handling-patterns/) for complete Truss assertion patterns.
+For assertion-based validation patterns, see [error-handling-patterns](../error-handling-patterns/).
 
 ---
 

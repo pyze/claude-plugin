@@ -34,7 +34,7 @@ Default model is `"gemini-3-flash-preview"`. Override via dynamic binding:
   (gemini/ask-text client "Hello"))
 ```
 
-Or let `wemble.workflow/run-loop` bind it from the `:gemini {:model "..."}` spec.
+All API functions (`ask`, `ask-text`, `ask-json`, `chat-turn`) respect `gemini/*model*`. The `wemble.workflow/run-loop` function binds this var automatically from its `:gemini {:model "..."}` spec, so workflow specs do not need manual binding.
 
 ## chat-turn
 
@@ -43,8 +43,7 @@ Multi-turn conversation with automatic function call handling:
 ```clojure
 (gemini/chat-turn client history config
   {:fc-handler  (fn [name args] (dispatch name args))
-   :max-rounds  10
-   :model       "gemini-3-flash-preview"})
+   :max-rounds  10})
 ;; => {:text "..." :history [...] :function-calls [{:name :args :result}]}
 ```
 

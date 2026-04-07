@@ -237,6 +237,27 @@ Truss supports rich predicate syntax for sophisticated validation:
 
 ---
 
+## REPL Debugging
+
+When catching Truss assertion failures at the REPL, use these to navigate error context:
+
+```clojure
+;; Extract structured data from ex-info exceptions
+(try
+  (have! string? 42)
+  (catch clojure.lang.ExceptionInfo e
+    (ex-data e)))          ;; => {:type :validation/... :value 42 ...}
+
+;; Walk the cause chain for wrapped exceptions
+(.getCause e)              ;; => original exception if wrapped with ex-info
+
+;; Extract Truss context from caught exceptions
+;; Truss attaches context via with-ctx+ as :truss/context in ex-data
+(:truss/context (ex-data e))
+```
+
+---
+
 ## Best Practices
 
 1. **Use `have!` for security**: Never elide security-critical checks

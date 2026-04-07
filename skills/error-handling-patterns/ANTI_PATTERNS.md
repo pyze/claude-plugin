@@ -247,65 +247,24 @@ Common mistakes to avoid when implementing error handling.
 
 ## Macro Nesting Anti-Pattern
 
-### DON'T: Wrap Macros in Macros
+Never wrap resilience macros; merge configs instead.
 
 ```clojure
 ;; BAD - Wrapping macro in macro causes double application
 (defmacro with-resilience [& body]
   `(bw/bulwark my-spec ~@body))
 
-;; When used:
-(with-resilience
-  (bw/bulwark other-spec  ;; Now bulwark is applied TWICE!
-    (api-call)))
-```
+(defn call-api [prompt]
+  (bw/bulwark api-spec            ;; Already has rate limiting!
+    (with-resilience              ;; Double rate limiting!
+      (api/generate prompt))))
 
-**Problem**: Macro expansion happens at compile time. If your macro wraps another macro, and users also use that macro directly, you get double application of the behavior (e.g., double rate limiting, double retries).
-
-### DO: Merge Configs into Single Spec
-
-```clojure
 ;; GOOD - Merge configurations into one spec
 (def combined-spec
-  (merge
-   base-resilience-spec
-   additional-rate-limit-spec
-   custom-retry-spec))
+  (merge base-resilience-spec rate-limit-spec retry-spec))
 
-;; Single bulwark call with merged config
-(bw/bulwark combined-spec
-  (api-call))
-```
-
-**Why**: Single point of control, no hidden composition, behavior is explicit and predictable.
-
-### Real-World Example: Rate Limiting Bug
-
-This anti-pattern caused a production bug where API calls were rate-limited twice:
-
-```clojure
-;; The buggy code (simplified)
-(defmacro with-gemini-resilience [& body]
-  `(bw/bulwark rate-limit-spec ~@body))
-
-;; In gemini-impl.clj - ALSO had bulwark
-(defn call-gemini [prompt]
-  (bw/bulwark gemini-spec  ;; Already has rate limiting!
-    (with-gemini-resilience  ;; Double rate limiting!
-      (api/generate prompt))))
-```
-
-**Fix**: Remove the wrapper macro, merge all resilience config into `gemini-spec`:
-
-```clojure
-(def gemini-spec
-  (merge
-   (rl/init {::rl/bucket-size 166 ::rl/period-ms 1000})
-   (to/init {::to/timeout-ms 120000})
-   (retry/init {...})))
-
-(defn call-gemini [prompt]
-  (bw/bulwark gemini-spec
+(defn call-api [prompt]
+  (bw/bulwark combined-spec
     (api/generate prompt)))
 ```
 

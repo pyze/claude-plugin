@@ -87,6 +87,8 @@ Standard `::pcr/wrap-resolve` plugins. `build-signal-graph` applies plugins via 
 
 ## 2-Layer Dedup Signal Pattern
 
+**Advanced:** Only needed when non-root resolvers use MissionaryFlow.
+
 **Problem**: Non-root resolvers with `m/?<` switchMap cancel in-flight HTTP requests when upstream emits a duplicate value.
 
 **Solution**: Separate dedup into its own `m/signal` layer BEFORE the resolve `m/ap`:

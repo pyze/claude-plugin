@@ -107,9 +107,9 @@ Human tensor AI
 
 Forward slashes create explicit tensions forcing balanced choices:
 
-- `eps/phi`: Balance approximation (good enough) against perfection (exact)
-- `Sigma/mu`: Balance adding features against reducing complexity
-- `c/h`: Balance execution speed against atomic cleanliness
+- `eps/phi` (approximation vs perfection): Balance approximation (good enough) against perfection (exact)
+- `Sigma/mu` (feature addition vs complexity reduction): Balance adding features against reducing complexity
+- `c/h` (speed vs cleanliness): Balance execution speed against atomic cleanliness
 
 These tensions make tradeoffs explicit in the encoded directive.
 
