@@ -75,6 +75,8 @@ Core functional programming patterns for Clojure code.
 - ✅ Separate from business logic
 - ❌ NEVER hide side effects in pure-looking functions
 
+**Hidden global state detection:** grep for `@global-`, `@app-`, `deref` of module-level vars inside function bodies (not at top level). These are hidden dependencies that should be explicit arguments.
+
 ---
 
 ## Defaults at the Edges

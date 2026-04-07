@@ -342,6 +342,12 @@ For projects not using integrant-repl:
 
 ## Anti-Patterns
 
+### Missing halt-key! (Resource Leak)
+
+For every `ig/init-key` defmethod, verify a matching `ig/halt-key!` exists. Missing halt-key! means resources leak on system restart — connections stay open, threads keep running, ports remain bound.
+
+**Detection:** grep for `ig/init-key` defmethods, then check each has a corresponding `ig/halt-key!` for the same key. Flag any init-key without a matching halt-key!.
+
 ```clojure
 ;; WRONG: Hyphenated key
 (defmethod ig/init-key :my-service [_ config] ...)
