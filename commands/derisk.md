@@ -113,15 +113,9 @@ Store findings at `["plan-risks", "option-analysis"]` and `["plan-risks", "explo
 - Categorize remaining risks by level (NONE/LOW/MEDIUM/HIGH)
 - Note confidence level in recommended option
 
-### 8. Include Overall Risk Level
+### 8. No Overall Risk Level
 
-End the Risk Assessment section with a summary line that the ExitPlanMode gate parses:
-
-```
-Overall risk level: LOW
-```
-
-Use the highest risk level found across all analyzed options (NONE, LOW, MEDIUM, or HIGH). The gate reads this line directly from the plan file — no separate result file needed.
+The ExitPlanMode gate checks each `RISK:` line individually. Any MEDIUM or HIGH blocks until resolved or ACCEPTED by the user. Do not compute or write an "Overall risk level" line — each assumption stands on its own.
 
 ### 9. Handle Optional Arguments
 

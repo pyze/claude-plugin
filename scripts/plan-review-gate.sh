@@ -60,12 +60,12 @@ Format: for each plan deliverable, evaluate against these criteria:
 List each deliverable with PASS/FAIL per criterion. Note revision suggestions for failures.
 
 ## Risk Assessment
-Format: list each unvalidated assumption with:
+Format: list each assumption with:
 - ASSUMPTION: [what the plan depends on]
 - STATUS: Validated/Unvalidated
 - RISK: NONE/LOW/MEDIUM/HIGH
 - EVIDENCE: [how it was validated, or why it couldn't be]
-End with: Overall risk level: [NONE/LOW/MEDIUM/HIGH]
+The gate checks each RISK: line individually. Any MEDIUM/HIGH blocks until resolved or ACCEPTED by user.
 
 === AGENT DISPATCH ===
 
@@ -76,7 +76,7 @@ End with: Overall risk level: [NONE/LOW/MEDIUM/HIGH]
 2. DERISK AGENT
    Give it ONLY: the plan file + /derisk command + REPL access
    Output: write to /tmp/plan-risk-assessment.md
-   MUST include line: Overall risk level: [NONE/LOW/MEDIUM/HIGH]
+   Each assumption must have a RISK: line. Gate checks each individually.
 
 IMPORTANT: agents write to SEPARATE temp files to avoid clobbering.
 They must be SEPARATE agents with no conversation history.
@@ -90,37 +90,40 @@ print(json.dumps({'hookSpecificOutput': {'hookEventName': 'PreToolUse', 'permiss
   exit 0
 fi
 
-# Both markers present — parse risk level from ## Risk Assessment section
-risk_level=$(awk '/^## Risk Assessment/{found=1; next} found && /^## /{exit} found && /[Oo]verall risk level:/{sub(/.*[Oo]verall risk level: */, ""); print; exit}' "$plan_file" | tr -d '[:space:]' | tr '[:lower:]' '[:upper:]')
+# Both markers present — scan every RISK: line in the Risk Assessment section
+# Extract all RISK: values between ## Risk Assessment and the next ## heading
+risk_lines=$(awk '/^## Risk Assessment/{found=1; next} found && /^## /{exit} found && /RISK:/{print}' "$plan_file")
 
-# No risk level found in the section
-if [ -z "$risk_level" ]; then
+# No RISK: lines found
+if [ -z "$risk_lines" ]; then
   cat <<'DENY'
 {
   "hookSpecificOutput": {
     "hookEventName": "PreToolUse",
     "permissionDecision": "deny",
-    "permissionDecisionReason": "RISK LEVEL MISSING\n\nThe ## Risk Assessment section exists but does not contain an 'Overall risk level: [NONE/LOW/MEDIUM/HIGH]' line.\n\nAdd this line to the Risk Assessment section, then call ExitPlanMode again."
+    "permissionDecisionReason": "NO RISK ENTRIES FOUND\n\nThe ## Risk Assessment section exists but contains no RISK: lines.\n\nEach assumption must have a RISK: NONE/LOW/MEDIUM/HIGH/ACCEPTED line.\nAdd risk entries, then call ExitPlanMode again."
   }
 }
 DENY
   exit 0
 fi
 
-case "$risk_level" in
-  NONE|LOW|ACCEPTED)
-    if [ -n "$ISSUE" ]; then
-      echo "PLAN APPROVED — transitioning to Do phase. Before dispatching subagents, read the plan from GitHub issue #$ISSUE (gh issue view $ISSUE --comments). The issue comment contains the full plan + PDCA reminder. Include the plan content and Core Assumptions in each subagent's task description."
-    fi
-    exit 0
-    ;;
-  *)
-    python3 -c "
+# Check for MEDIUM or HIGH risks that haven't been ACCEPTED
+blocking_risks=$(echo "$risk_lines" | grep -iE 'RISK:\s*(MEDIUM|HIGH)' || true)
+
+if [ -n "$blocking_risks" ]; then
+  # Format the blocking risks for display
+  python3 -c "
 import json, sys
-level = sys.argv[1]
-reason = 'RISKS REMAIN (' + level + ')\n\nDerisking found risks that could not be reduced to LOW. Do NOT loop /derisk again.\n\nPresent the remaining risks to the user and ask how they want to proceed:\n- Accept the risks and continue\n- Revise the plan to avoid the risky areas\n- Abandon this approach\n\nIf the user accepts the remaining risks, change the Overall risk level line in the ## Risk Assessment section to: Overall risk level: ACCEPTED\n\nThen call ExitPlanMode again.'
+lines = sys.argv[1].strip()
+reason = 'UNRESOLVED RISKS\n\nThe following assumptions have MEDIUM or HIGH risk:\n\n' + lines + '\n\nDo NOT loop /derisk again.\n\nPresent these risks to the user and ask how they want to proceed:\n- Accept the risks and continue\n- Revise the plan to avoid the risky areas\n- Validate the assumptions to reduce risk\n\nIf the user accepts a risk, change its RISK: line to RISK: ACCEPTED\n\nThen call ExitPlanMode again.'
 print(json.dumps({'hookSpecificOutput': {'hookEventName': 'PreToolUse', 'permissionDecision': 'deny', 'permissionDecisionReason': reason}}))
-" "$risk_level"
-    exit 0
-    ;;
-esac
+" "$blocking_risks"
+  exit 0
+fi
+
+# All risks are NONE, LOW, or ACCEPTED — approve
+if [ -n "$ISSUE" ]; then
+  echo "PLAN APPROVED — transitioning to Do phase. Before dispatching subagents, read the plan from GitHub issue #$ISSUE (gh issue view $ISSUE --comments). The issue comment contains the full plan + PDCA reminder. Include the plan content and Core Assumptions in each subagent's task description."
+fi
+exit 0

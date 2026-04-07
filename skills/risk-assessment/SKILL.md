@@ -132,13 +132,7 @@ Format for each assumption in the plan:
   - BLAST RADIUS: [leaf / shared / system / data model]
 ```
 
-End with:
-
-```
-Overall risk level: [highest individual risk across all assumptions]
-```
-
-The overall level is the **max** of all individual levels. One HIGH assumption makes the overall HIGH, regardless of how many are LOW.
+The plan-review gate scans every `RISK:` line individually. Any MEDIUM or HIGH blocks ExitPlanMode until resolved (validated down to LOW/NONE, or changed to ACCEPTED by the user). There is no "overall risk level" — each assumption stands on its own.
 
 ---
 
@@ -228,5 +222,5 @@ If validation genuinely can't be done during planning (requires running the full
 3. **Impact × likelihood** — standard matrix, calibrated for code changes
 4. **Blast radius matters** — shared components amplify risk
 5. **Reversibility matters** — deletions and schema changes are high risk
-6. **Overall = max** — one HIGH makes the whole plan HIGH
+6. **Each risk stands alone** — the gate checks every RISK: line individually; no overall to game
 7. **ACCEPTED is a user decision** — never self-assign it
