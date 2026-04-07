@@ -1,6 +1,6 @@
 ---
 name: decomplection-first-design
-description: "Decomplection per Rich Hickey: simple = one fold (objective, about the artifact), easy = nearby (subjective, about the programmer). Complect = to braid together. State is never simple. DDRY = extracted code must be composable, not just not-repeated. Use when making design decisions, evaluating trade-offs, choosing approaches, extracting shared code, or reviewing for entanglement."
+description: "Decomplection per Rich Hickey: simple = one fold (objective, about the artifact), easy = nearby (subjective, about the programmer). Complect = to braid together. Three lenses: Hickey (decomposition), Meadows (interaction count), Rams (clarity). State is never simple. DDRY = extracted code must be composable, not just not-repeated. 'There is no three' — reject what doesn't serve simplicity or feedback. Use when making design decisions, evaluating trade-offs, choosing approaches, extracting shared code, or reviewing for entanglement."
 ---
 
 # Decomplection-First Design Skill
@@ -49,11 +49,39 @@ description: "Decomplection per Rich Hickey: simple = one fold (objective, about
 
 ---
 
+## Three Lenses of Simplicity
+
+Hickey's decomposition is one of three complementary lenses for evaluating simplicity. Apply all three:
+
+**Lens 1 — Hickey (Decomposition):** Is this one fold? One role, one concept, one dimension. Not interleaved with other things. This is the structural lens — see Core Definitions above.
+
+**Lens 2 — Meadows (Interaction Count):** How many components must coordinate for this to work? A function that reads config, checks cache, queries DB, updates metrics, and logs has 5 coordination points. A pure transform + single IO boundary has 2. Fewer interactions between parts = simpler system, even if each part is well-decomposed. Count the causal chains.
+
+**Lens 3 — Rams (Clarity):** Does each component reveal its purpose plainly? A function named `process` that validates, transforms, and persists is unclear. A function named `validate-query` is clear. Names, arities, and return types should communicate intent without reading the implementation. Clarity is not minimalism — it's each element making its role obvious.
+
+These lenses are independent. Code can be well-decomposed (passes Hickey) but have too many interactions between parts (fails Meadows). Code can have few interactions (passes Meadows) but obscure names (fails Rams). Apply all three.
+
+---
+
 ## Decomplection Decision Tree
 
 When evaluating a design, ask these questions in order:
 
 ```
+0. Should this exist at all?
+   │
+   ├─ Does it serve SIMPLICITY (decomposition, fewer interactions, clarity)?
+   │   If yes → proceed to Step 1.
+   │
+   ├─ Does it serve FEEDBACK (observability, debuggability, REPL-friendliness)?
+   │   If yes → proceed to Step 1.
+   │
+   └─ If NEITHER → Reject it.
+        No indirection layers "for flexibility."
+        No domain models "for completeness."
+        No abstractions "in case we need it later."
+        No opaque wrappers that hide state from REPL inspection.
+
 1. Does this have ONE role / ONE concept / ONE dimension?
    │
    ├─ NO → It's complected. What things are braided together?
@@ -261,6 +289,8 @@ Before committing, verify:
 - [ ] Reusable (REPL, tests, multiple contexts)
 - [ ] Composable (output feeds into other functions)
 - [ ] Pure or boundary-marked (! suffix for side effects)
+- [ ] Few coordination points (each component interacts with minimal others)
+- [ ] Self-evident purpose (name and arity reveal intent without reading body)
 
 **If any item fails: Ask "What would it take to decomplect this?"**
 
@@ -276,5 +306,8 @@ Before committing, verify:
 6. **Composition beats entanglement** — place things together, don't braid them
 7. **Modularity ≠ simplicity** — separate modules can still be complected
 8. **DDRY over DRY** — extracted code must be decomplected and composable, not just not-repeated
+9. **Count interactions** — fewer coordination points between components = simpler system
+10. **Clarity over cleverness** — names, arities, and return types reveal intent without reading the body
+11. **There is no three** — if it doesn't serve simplicity or feedback, reject it
 
 **For error handling decisions**, see [error-handling-patterns](../error-handling-patterns/) which covers the "fail fast > fallback > backward compatibility" hierarchy.

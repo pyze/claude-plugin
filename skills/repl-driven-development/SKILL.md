@@ -102,6 +102,26 @@ See [integrant-lifecycle](../integrant-lifecycle/) for full details. Key command
 
 ---
 
+## Design for REPL-Friendly Systems
+
+Building systems that are inherently observable starts with design choices, not bolted-on tooling.
+
+### Design for Printability
+
+- **Maps over opaque objects** — `(keys x)` at the REPL beats reading source to understand shape
+- **Error messages as data** — name what went wrong and what was expected, not prose explanations
+
+### Design for REPL-Friendly Observability
+
+- **`tap>` + Portal over logging** — observable from the REPL, filterable as data, no log level ceremony
+- **Functions callable in isolation** — if you can't call it at the REPL without standing up half the system, it has too many coordination points
+- **`deref`-able state over opaque service objects** — the REPL can see inside atoms and delays
+- **Data literals over formatted strings** — compose with REPL tools (`keys`, `select-keys`, `frequencies`)
+
+**Preference hierarchy**: REPL-inspectable > `tap>`/Portal > structured logging > println > external dashboard
+
+---
+
 ## Additional Resources
 
 - [FULL_CYCLE.md](./FULL_CYCLE.md) — Full 13-phase methodology for complex features
