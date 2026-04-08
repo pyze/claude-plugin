@@ -5,7 +5,7 @@ set -euo pipefail
 # Note: REPL evaluation (Bash tool / clojure_eval) is unaffected by this hook.
 
 # Exempt plan files — Claude's plan mode writes here
-FILE_PATH=$(echo "$CLAUDE_TOOL_INPUT" | grep -oE '"file_path"\s*:\s*"[^"]*"' | head -1 | sed 's/.*: *"//;s/"$//' || true)
+FILE_PATH=$(echo "${CLAUDE_TOOL_INPUT:-}" | grep -oE '"file_path"\s*:\s*"[^"]*"' | head -1 | sed 's/.*: *"//;s/"$//' || true)
 if [ -n "$FILE_PATH" ]; then
   case "$FILE_PATH" in
     */.claude/plans/*) exit 0 ;;
