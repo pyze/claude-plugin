@@ -29,15 +29,6 @@
         ]
       },
       {
-        "matcher": "Write",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/scripts/block-local-plans.sh"
-          }
-        ]
-      },
-      {
         "matcher": "Edit",
         "hooks": [
           {
