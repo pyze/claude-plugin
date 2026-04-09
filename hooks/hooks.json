@@ -104,12 +104,22 @@
         ]
       }
     ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/scripts/turn-snapshot.sh"
+          }
+        ]
+      }
+    ],
     "Stop": [
       {
         "hooks": [
           {
             "type": "command",
-            "command": "STACK=\"$CLAUDE_PROJECT_DIR/.claude/issue-stack.md\"; if [ ! -f \"$STACK\" ]; then exit 0; fi; ISSUE=$(grep '^- #' \"$STACK\" | head -1 | grep -o '#[0-9]*' | tr -d '#'); if [ -z \"$ISSUE\" ]; then exit 0; fi; LABELS=$(gh issue view \"$ISSUE\" --json labels -q '.labels[].name' 2>/dev/null); if echo \"$LABELS\" | grep -q 'pdca:do'; then echo \"PDCA: issue #$ISSUE is in Do phase. Check if all plan checkboxes are complete. If yes, transition to Check: gh issue edit $ISSUE --remove-label pdca:do --add-label pdca:check\"; elif echo \"$LABELS\" | grep -q 'pdca:check'; then echo \"PDCA: issue #$ISSUE is in Check phase. Present the gap analysis to the user and transition to React.\"; elif echo \"$LABELS\" | grep -q 'pdca:react'; then echo \"PDCA: issue #$ISSUE is in React phase. Ensure the user has responded to the gap analysis.\"; fi"
+            "command": "${CLAUDE_PLUGIN_ROOT}/scripts/turn-review.sh"
           }
         ]
       }
