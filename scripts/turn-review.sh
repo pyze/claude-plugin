@@ -60,6 +60,20 @@ if [ -f "$STACK" ]; then
   fi
 fi
 
+# --- Periodic /align-docs reminder ---
+ALIGN_TS="${CLAUDE_PROJECT_DIR}/.claude/.last-align-docs"
+if [ -f "$ALIGN_TS" ]; then
+  last_run=$(cat "$ALIGN_TS")
+  now=$(date +%s)
+  days_ago=$(( (now - last_run) / 86400 ))
+  if [ "$days_ago" -ge 7 ]; then
+    reminders="${reminders}/align-docs: last run ${days_ago} days ago. Consider running it to check for doc drift.\n"
+  fi
+else
+  # No timestamp — suggest first run
+  reminders="${reminders}/align-docs: never run on this project. Consider running it to audit documentation consistency.\n"
+fi
+
 # Output reminders (if any)
 if [ -n "$reminders" ]; then
   printf "=== Turn Review ===\n${reminders}==="

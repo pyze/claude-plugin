@@ -183,7 +183,13 @@ Then ask the user via AskUserQuestion with options:
 
 If the user chooses "Apply", use the Edit tool to make the change immediately, then proceed to the next finding.
 
-After all findings are processed, show a summary:
+After all findings are processed, update the timestamp and show a summary:
+
+```bash
+# Record completion for the periodic reminder
+mkdir -p .claude && date +%s > .claude/.last-align-docs
+```
+
 ```
 ## Alignment Complete
 
