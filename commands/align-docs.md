@@ -18,16 +18,16 @@ Proactively audit all Claude-facing documents for ambiguities, redundancies, con
 
 ## How It Works
 
-### Phase 1: Discovery (3 Parallel Agents)
+### Phase 1: Discovery (4 Parallel Agents)
 
-Launch 3 Explore agents in a single message. Each agent reads the full document set but focuses on one analysis dimension.
+Launch 4 Explore agents in a single message. Each agent reads the full document set but focuses on one analysis dimension.
 
 **Document set** (all Claude-facing files):
 - `CLAUDE.md` (project root)
 - `.claude/skills/NAVIGATION.md`
 - `.claude/skills/*/SKILL.md` and sub-files (all skills)
 - `.claude/commands/*.md` (all commands)
-- Auto-memory files (`MEMORY.md`, `missionary-patterns.md`, `pdca-lessons.md`, `testing.md`)
+- Auto-memory files (`MEMORY.md` index + all referenced `.md` files in the memory directory)
 - `.claude/agents/*.md`
 
 #### Agent 1: Redundancy
@@ -99,6 +99,28 @@ Launch 3 Explore agents in a single message. Each agent reads the full document 
 > - Architecture descriptions that don't match current code structure
 > - Render pipeline descriptions (has changed significantly across #453/#463)
 
+#### Agent 4: Memory Promotion
+
+> Read all auto-memory files (MEMORY.md index + each referenced .md file). For each memory, evaluate whether it should be promoted to a skill or CLAUDE.md.
+>
+> Report findings in this format:
+> ```
+> ## Memory Promotion Findings
+>
+> ### P1: [Memory file name]
+> - **Content:** "quoted key insight"
+> - **Current location:** memory/[file].md
+> - **Promotion target:** [skill name]/SKILL.md or CLAUDE.md:[section]
+> - **Reason:** [duplicates skill content / pattern validated across sessions / project-wide guidance]
+> - **Action:** [absorb into skill and delete memory / merge into CLAUDE.md / keep as memory]
+> ```
+>
+> Promotion criteria:
+> - **Promote to skill** if the memory describes a reusable pattern, coding guideline, or design principle that applies across projects. Check if a skill already covers this — if so, the memory is redundant and should be deleted.
+> - **Promote to CLAUDE.md** if the memory describes a project-specific convention, workflow preference, or configuration that applies to the current project but not others.
+> - **Keep as memory** if the memory is about the user (preferences, role), is time-bound (project status), or is a reference pointer (external system locations).
+> - **Delete** if the memory duplicates a skill verbatim or has become stale (references removed features, closed issues, or outdated patterns).
+
 ### Phase 2: Merge & Prioritize
 
 After all 3 agents complete, merge their findings:
@@ -109,8 +131,10 @@ After all 3 agents complete, merge their findings:
    |----------|----------|-----------|
    | Conflict | High | Contradictory guidance causes wrong behavior |
    | Staleness | High | Dead references waste investigation time |
+   | Memory duplicate | High | Memory duplicating skill content causes drift |
    | Redundancy | Medium | Drift risk, but not immediately harmful |
    | Ambiguity | Medium | May cause wrong interpretation |
+   | Memory promotion | Medium | Validated pattern stuck in memory instead of skill |
    | Missing canonical | Low | Organizational improvement |
 
 3. **Sort** — high severity first, then by number of files affected (more = higher priority)
@@ -122,9 +146,11 @@ After all 3 agents complete, merge their findings:
    Found N findings across M files:
    - X conflicts (high)
    - Y stale references (high)
-   - Z redundancies (medium)
-   - W ambiguities (medium)
-   - V missing canonicals (low)
+   - Z memory duplicates (high)
+   - W redundancies (medium)
+   - V memory promotions (medium)
+   - U ambiguities (medium)
+   - T missing canonicals (low)
 
    Ready to walk through each finding. [Proceed] [Show report only]
    ```
