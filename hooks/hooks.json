@@ -62,7 +62,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "if echo \"$CLAUDE_TOOL_INPUT\" | grep -q 'git commit'; then echo 'Reminder: update .claude/issue-stack.md and the active GitHub issue with progress.'; fi"
+            "command": "if echo \"${CLAUDE_TOOL_INPUT:-}\" | grep -q 'git commit'; then echo 'Reminder: update .claude/issue-stack.md and the active GitHub issue with progress.'; fi"
           }
         ]
       },
@@ -71,7 +71,16 @@
         "hooks": [
           {
             "type": "command",
-            "command": "if echo \"$CLAUDE_TOOL_INPUT\" | grep -q 'gh issue create'; then echo 'Reminder: Issue body = problem statement + repro case. Post solution ideas and implementation plans as comments after creation.'; fi"
+            "command": "if echo \"${CLAUDE_TOOL_INPUT:-}\" | grep -q 'gh issue close'; then echo 'PDCA cycle complete. Reflect: what would have made this cycle more efficient? If anything is applicable to future sessions (not just this issue), save it to auto-memory.'; fi"
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if echo \"${CLAUDE_TOOL_INPUT:-}\" | grep -q 'gh issue create'; then echo 'Reminder: Issue body = problem statement + repro case. Post solution ideas and implementation plans as comments after creation.'; fi"
           }
         ]
       },
@@ -89,7 +98,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "if echo \"$CLAUDE_TOOL_INPUT\" | grep -qE '\\(atom |\\(volatile! |\\(ref |\\(agent |\\(defonce '; then if ! echo \"$CLAUDE_TOOL_INPUT\" | grep -qi 'APPROVED'; then echo 'WARNING: Mutable state introduced without approval comment. Per clojure-coding-standards, atom/volatile!/ref/agent require explicit user approval. Add a MUTATION APPROVED comment or ask the user.'; fi; fi"
+            "command": "if echo \"${CLAUDE_TOOL_INPUT:-}\" | grep -qE '\\(atom |\\(volatile! |\\(ref |\\(agent |\\(defonce '; then if ! echo \"$CLAUDE_TOOL_INPUT\" | grep -qi 'APPROVED'; then echo 'WARNING: Mutable state introduced without approval comment. Per clojure-coding-standards, atom/volatile!/ref/agent require explicit user approval. Add a MUTATION APPROVED comment or ask the user.'; fi; fi"
           }
         ]
       }
