@@ -67,19 +67,24 @@ Prioritize assumptions without evidence as high-risk. Include:
 - Performance characteristics (memory, latency)
 - Correctness properties (ordering, uniqueness)
 
-### 4. Validate Critical Assumptions Using REPL
+### 4. Validate Critical Assumptions
 
-Prioritize assumptions that affect option selection or feasibility. For each critical assumption:
+Prioritize assumptions that affect option selection or feasibility. Choose the right validation tool:
 
-1. **Formulate specific exploration approach**
-2. **Use REPL tools**: Load namespaces, run queries
-3. **Test with actual code execution**:
-   - Verify state store behavior: `(store/pull db [:entity/id "u1"] [:field])`
-   - Check event dispatch: `(dispatch! system {} [[:action]])`
-   - Validate HTTP handlers: Test with mock endpoint
-4. **Verify function signatures and return types**
-5. **Check file existence and namespace imports**
-6. **Validate data structures and interfaces**
+**REPL** — for specific values, return shapes, single code paths:
+1. Load namespaces, run queries
+2. Verify state store behavior, event dispatch, HTTP handlers
+3. Check function signatures and return types
+
+**Formal verification (Chiasmus)** — for exhaustive properties ("never", "always", "all paths"):
+1. Call `chiasmus_formalize` with the assumption in natural language
+2. Fill template slots with actual rules/states from the codebase
+3. Run `chiasmus_verify` — UNSAT = proven, SAT = counterexample found
+4. Use `chiasmus_graph` for reachability and impact assumptions
+
+See [formal-verification](../skills/formal-verification/) for patterns and decision tree.
+
+**Grep/LSP** — for existence checks, reference counting, call sites
 
 ### 5. Ask User Questions for Non-Determinable Information
 
