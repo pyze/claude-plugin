@@ -148,6 +148,8 @@ Do NOT create GitHub issues — just return findings.
 
 Each row in the skill registry spawns one analysis agent. The agent receives the skill content as context and applies judgment to find violations.
 
+**Skill files live in the plugin, not the project.** Read them from the plugin's skills directory (the same location as this command file — look for `skills/` as a sibling of `commands/`). These skills are loaded by Claude Code automatically, so they're available in the current context — you can read them directly.
+
 ### Skill Registry
 
 | Skill | File to Load | Detection Focus |
@@ -200,7 +202,7 @@ principles described in the skill content below.
 After dispatching all agents:
 
 1. **Dispatch mechanical agents** (3 agents, in parallel)
-2. **Load skill registry** — read each skill file listed in the registry
+2. **Load skill registry** — for each skill in the registry, load the skill content (these are plugin skills, already available in your context)
 3. **Dispatch principle-driven agents** (one per registry row, in parallel)
 4. **Merge findings** from all agents into a single collection
 5. **Deduplicate** — same file+line from multiple agents = single finding
