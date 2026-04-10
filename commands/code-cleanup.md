@@ -15,7 +15,7 @@ Analyze code for violations of Clojure best practices. Uses a two-layer architec
     ├── Layer 1: Mechanical Analysis (deterministic tooling)
     │   ├── Static Analysis (clj-kondo)
     │   ├── Code Duplication (structural comparison)
-    │   └── Dependency Topology (namespace coupling)
+    │   └── Code Graph Analysis (Chiasmus — dead code, cycles, impact)
     │
     ├── Layer 2: Principle-Driven Analysis (skill content as criteria)
     │   ├── One agent per skill registry entry
@@ -105,40 +105,48 @@ Return findings as a list of {files, lines, pattern, severity}.
 Do NOT create GitHub issues — just return findings.
 ```
 
-### Mechanical Agent 3: Dependency Topology
+### Mechanical Agent 3: Code Graph Analysis (Chiasmus)
 
-**Concern:** Namespace coupling and dependency health.
-**Detection method:** clj-kondo analysis + REPL namespace introspection.
+**Concern:** Structural code health — dead code, dependency cycles, blast radius.
+**Detection method:** Chiasmus MCP server (`chiasmus_graph`) via tree-sitter call graph extraction.
+
+**Requires:** Chiasmus MCP server (provided by this plugin's `.mcp.json`).
 
 **Detects:**
-- Circular namespace dependencies
-- High fan-in namespaces (imported by 10+ others — high blast radius on change)
-- Orphan namespaces (not required by any other namespace)
-- High fan-out namespaces (require 10+ others — tightly coupled)
+- Dead code (functions unreachable from entry points)
+- Circular dependencies in call graphs
+- High-impact functions (many transitive callers — high blast radius)
+- Orphan functions (defined but never called)
 
 **Instructions for agent:**
 
 ```
-Analyze namespace dependency structure across src/ and test/.
+Use the chiasmus_graph MCP tool to analyze code structure across src/ and test/.
 
-1. **Circular dependencies:** Run clj-kondo with circular-dependency linter enabled:
-   clj-kondo --lint src --config '{:linters {:namespace {:level :warning}}}'
-   Or at the REPL, check ns-aliases for bidirectional requires.
-   Flag each circular pair with both namespace names.
+1. **Dead code detection:** Run chiasmus_graph with analysis type "dead-code" on
+   src/ files. This finds functions unreachable from entry points. Flag each with
+   the function name and file.
+   Severity: MEDIUM — candidates for deletion.
 
-2. **High fan-in (blast radius):** Count how many namespaces require each namespace.
-   Flag any namespace required by 10+ others. These are high-impact change targets
-   that need strong test coverage and stable APIs.
+2. **Cycle detection:** Run chiasmus_graph with analysis type "cycles" on src/ files.
+   Flag each cycle with the participating functions/namespaces.
+   Severity: HIGH — circular dependencies make code hard to understand and change.
 
-3. **Orphan namespaces:** Find namespaces not required by any other namespace in
-   the project. Exclude entry points (main, init, test namespaces). Orphans are
-   candidates for deletion or indicate missing requires.
+3. **Impact analysis:** For functions in heavily-edited files (check git log --stat),
+   run chiasmus_graph with analysis type "impact" to find transitive callers.
+   Flag functions with 10+ transitive callers as high blast radius.
+   Severity: MEDIUM — these need strong test coverage and stable APIs.
 
-4. **High fan-out (coupling):** Count how many namespaces each namespace requires.
-   Flag any namespace requiring 10+ others. These are tightly coupled and may need
-   splitting or interface extraction.
+4. **Reachability verification:** For any function that looks unused but is in a
+   public namespace, run chiasmus_graph with analysis type "reachability" to verify
+   it's truly unreachable before flagging as dead code.
 
-Return findings as a list of {namespace, issue-type, detail, severity}.
+If chiasmus_graph is unavailable (MCP server not connected), fall back to:
+- clj-kondo for circular namespace dependencies
+- grep for fan-in/fan-out counting
+- REPL namespace introspection
+
+Return findings as a list of {file, function, issue-type, detail, severity}.
 Do NOT create GitHub issues — just return findings.
 ```
 
@@ -220,14 +228,14 @@ After dispatching all agents:
    the agent. For mechanical findings, use:
    - Static analysis -> clj-kondo documentation (external)
    - Code duplication -> no skill (structural concern)
-   - Dependency topology -> no skill (structural concern)
+   - Code graph analysis -> no skill (structural concern, Chiasmus-powered)
 
 ### Issue Categories
 
 For mechanical agents, use fixed category names:
 - "Static analysis findings"
 - "Code duplication"
-- "Dependency topology"
+- "Code graph analysis"
 
 For principle-driven agents, use the skill path as category:
 - "clojure-coding-standards/FUNCTIONAL-PRINCIPLES violations"
@@ -267,3 +275,4 @@ When an agent produces a fix script, the orchestrator includes it in the GitHub 
 
 Skills in the registry are the standards these agents enforce. Mechanical agents relate to:
 - `rewrite-clj-transforms` — Structural code modification for auto-fix scripts
+- Chiasmus MCP server — Call graph analysis for dead code, cycles, impact (configured in plugin `.mcp.json`)

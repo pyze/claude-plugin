@@ -1,0 +1,6 @@
+{
+  "chiasmus": {
+    "command": "npx",
+    "args": ["-y", "chiasmus"]
+  }
+}
