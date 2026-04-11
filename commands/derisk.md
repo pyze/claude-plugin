@@ -7,14 +7,7 @@ description: "Risk analysis: identify options, validate assumptions at REPL"
 
 Report implementation options with their unvalidated assumptions, then validate critical assumptions at the REPL.
 
-**Load the [risk-assessment](../skills/risk-assessment/) skill before proceeding.** It defines how to evaluate and assign risk levels. Non-negotiable rules:
-
-- **Unvalidated = MEDIUM minimum.** If you haven't checked, it's not LOW.
-- **Overall = max.** One MEDIUM makes the overall MEDIUM. One HIGH makes overall HIGH.
-- **Assessment is not a TODO list.** "Need to check X" is not evidence — check it now.
-- **No compound assumptions.** Parenthetical claims like "(which is dead)" are hidden assumptions that need their own validation.
-- **No mitigation-as-assessment.** "If X fails, we can do Y" is a fallback plan, not a risk level reduction.
-- **Partial validation ≠ LOW.** "Works for simple cases" on a correctness property is MEDIUM until comprehensively tested.
+**Load the [risk-assessment](../skills/risk-assessment/) skill before proceeding.** It defines how to evaluate and assign risk levels — all rules are defined there.
 
 This command helps identify what needs validation before implementing plans by analyzing multiple approaches and highlighting unsupported assumptions for each option. Particularly useful for state management decisions, effect ordering, and API integration patterns.
 

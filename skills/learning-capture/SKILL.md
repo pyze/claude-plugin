@@ -12,6 +12,9 @@ Decide whether a learning is worth persisting, and where it should go.
 **Use DIFFERENT skill if:**
 - Auto-memory mechanics (file format, MEMORY.md index) → built-in auto-memory instructions
 - Updating skills or CLAUDE.md → [documentation-maintenance](../documentation-maintenance/)
+- Auditing for stale or redundant docs → `/align-docs` (includes memory promotion)
+
+**Related perspectives on "where does knowledge go?":** This skill decides *when and where* to persist learnings. [documentation-maintenance](../documentation-maintenance/) decides *where to create* new docs. `/align-docs` audits for *drift and promotion*.
 
 ---
 

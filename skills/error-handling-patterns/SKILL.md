@@ -49,13 +49,17 @@ Implement explicit, fail-fast error handling that makes problems visible during 
 
 ## Core Philosophy: Fail-Fast Over Fallback Logic
 
-**Error strategy hierarchy**: `fail fast > fallback > backward compatibility`
+**Error strategy hierarchy** (for runtime error handling, not architectural decisions): `fail fast > fallback > backward compatibility`
 
-| Strategy | Priority | When to Use |
-|----------|----------|-------------|
-| **Fail fast** | Highest | Default choice. Make errors visible during development. |
-| **Fallback** | Medium | Only when fail-fast isn't possible and graceful degradation is needed. |
-| **Backward compatibility** | Lowest | Avoid. Don't maintain deprecated code paths "just in case". |
+| Strategy | Priority | Approval Required |
+|----------|----------|-------------------|
+| **Fail fast** | Default | No — this is the default. Use unless user explicitly approves an alternative. |
+| **Fallback** | Requires approval | Yes — ask the user before adding fallback logic. Justify why fail-fast won't work. |
+| **Backward compatibility** | Requires approval | Yes — ask the user. Almost never appropriate. Don't maintain deprecated paths "just in case". |
+
+**Fail-fast is the only strategy Claude can choose autonomously.** Fallback and backward compatibility require explicit user approval, just like mutable state. If uncertain whether a situation calls for fallback or fail-fast, stop and ask the user.
+
+**Note:** This hierarchy applies to runtime error handling. For architectural refactoring (replacing v1 with v2), there is no backward compatibility — cut over cleanly. See `clojure-coding-standards` for the no-backward-compatibility policy.
 
 **CRITICAL POLICY**: Prefer explicit failure over silent fallback behavior.
 
@@ -98,9 +102,9 @@ When data is missing, the correct response is almost always to make the data pre
 - **Constraint violations** (unique key already exists)
 - **Required resources unavailable** (database down, service timeout)
 
-### When Fallback Logic Is Acceptable
+### When Fallback Logic Is Acceptable (Requires User Approval)
 
-Fallback logic is appropriate ONLY when ALL of these conditions are met:
+**Do not add fallback logic without asking the user first.** When proposing a fallback, present the justification and wait for approval. Fallback logic is appropriate ONLY when ALL of these conditions are met AND the user has approved:
 
 1. **Recovery is meaningful** - The fallback provides real value, not just silence
 2. **User expects it** - Feature explicitly designed for graceful degradation
@@ -111,6 +115,8 @@ Fallback logic is appropriate ONLY when ALL of these conditions are met:
 - **Optional features** (caching with cache miss fallback)
 - **Graceful degradation** (reduced feature set with poor connectivity)
 - **Safe defaults** (use system font if custom font fails to load)
+
+**Never acceptable**: Fallback code paths during refactoring — conditional dispatch between old and new implementations, deprecated wrappers forwarding to new code, feature flags gating old vs new behavior. If refactoring, cut over cleanly. Don't keep both paths alive. **When uncertain whether a fallback is "graceful degradation" or "refactoring fallback," stop and ask the user.**
 
 ### Fallback Decision Tree
 

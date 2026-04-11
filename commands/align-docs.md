@@ -24,7 +24,6 @@ Launch 4 Explore agents in a single message. Each agent reads the full document 
 
 **Document set** (all Claude-facing files):
 - `CLAUDE.md` (project root)
-- `.claude/skills/NAVIGATION.md`
 - `.claude/skills/*/SKILL.md` and sub-files (all skills)
 - `.claude/commands/*.md` (all commands)
 - Auto-memory files (`MEMORY.md` index + all referenced `.md` files in the memory directory)
@@ -32,7 +31,7 @@ Launch 4 Explore agents in a single message. Each agent reads the full document 
 
 #### Agent 1: Redundancy
 
-> Read all Claude-facing documents listed above. For each concept, rule, or pattern, track every location where it appears. Cross-reference against `.claude/skills/NAVIGATION.md`'s "Canonical Sources of Truth" table.
+> Read all Claude-facing documents listed above. For each concept, rule, or pattern, track every location where it appears. Determine which skill is the authoritative source for each concept based on skill descriptions and "When to Use" sections.
 >
 > Report findings in this format:
 > ```
@@ -42,7 +41,7 @@ Launch 4 Explore agents in a single message. Each agent reads the full document 
 > - **Locations:**
 >   - file1.md:section — "quoted key text"
 >   - file2.md:section — "quoted key text"
-> - **Canonical source (per NAVIGATION.md):** [skill name] or "NOT LISTED"
+> - **Canonical source:** [skill name] (determined by skill description and boundary)
 > - **Divergence:** [how the versions differ, if at all]
 > - **Recommendation:** [consolidate to canonical / add to canonical table / remove duplicate]
 > ```
@@ -97,7 +96,7 @@ Launch 4 Explore agents in a single message. Each agent reads the full document 
 > - Issue number references — check if contextually outdated
 > - "Active Context" sections in memory referencing old branches
 > - Architecture descriptions that don't match current code structure
-> - Render pipeline descriptions (has changed significantly across #453/#463)
+> - Architecture descriptions that don't match current code structure
 
 #### Agent 4: Memory Promotion
 
@@ -123,7 +122,7 @@ Launch 4 Explore agents in a single message. Each agent reads the full document 
 
 ### Phase 2: Merge & Prioritize
 
-After all 3 agents complete, merge their findings:
+After all 4 agents complete, merge their findings:
 
 1. **Deduplicate** — if multiple agents flagged the same location, merge into one finding
 2. **Classify severity**:

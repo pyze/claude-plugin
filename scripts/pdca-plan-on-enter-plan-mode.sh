@@ -49,7 +49,7 @@ BEFORE calling ExitPlanMode, dispatch two independent review agents IN PARALLEL:
 1. DECOMPLECTION REVIEW AGENT — give it ONLY the plan file + decomplection-first-design skill.
    Writes to /tmp/plan-decomplection-review.md.
 2. DERISK AGENT — give it ONLY the plan file + /derisk command + REPL access.
-   Writes to /tmp/plan-risk-assessment.md. Must include "Overall risk level: [NONE/LOW/MEDIUM/HIGH]".
+   Writes to /tmp/plan-risk-assessment.md. Each assumption must have a RISK: line. Gate checks each individually.
 
 These must be SEPARATE agents with no conversation history — this ensures unbiased review.
 

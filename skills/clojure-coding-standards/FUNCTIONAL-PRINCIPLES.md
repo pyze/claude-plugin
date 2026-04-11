@@ -16,33 +16,7 @@ Core functional programming patterns for Clojure code.
 - `defonce` with mutable values (atoms, volatiles, etc.)
 - JS interop mutable state (`set!`, `.push`, `.splice`, mutable JS objects)
 
-**Before reaching for mutable state, STOP and refactor to pure functional form first.**
-
-### Common Alternatives to Mutable State
-
-| Instead of... | Use... |
-|---------------|--------|
-| Local atom for accumulation | `reduce`, `into`, transducers |
-| Atom for UI component state | Framework-provided state (e.g., component-local state) |
-| Atom for application state | Normalized store with event-driven effects |
-| Mutable JS object for library API | Library batch APIs (e.g., `batchUpdate()`) |
-| `defonce` atom for caching | Function arguments, event handlers |
-| `volatile!` for perf in tight loop | Transducers (which use volatiles internally) |
-
-```clojure
-;; ✅ DEFAULT - Immutable transformation
-(defn add-entity [db entity]
-  (assoc db (:db/id entity) entity))
-
-;; ❌ VIOLATION without approval - Any use of atoms, refs, agents
-(defn add-entity! [db entity]
-  (swap! db assoc (:db/id entity) entity))
-  ;; STOP: Must ask user BEFORE writing this code
-  ;; Without approval = VIOLATION. Do not proceed.
-  ;; After approval, document: "MUTATION APPROVED (2025-01-31) by [user]: ..."
-```
-
-**State management approval policy:** See main SKILL.md for unified approval process.
+**Before reaching for mutable state, STOP and ask the user.** See main [SKILL.md](./SKILL.md) for the full approval workflow and alternatives table.
 
 ---
 

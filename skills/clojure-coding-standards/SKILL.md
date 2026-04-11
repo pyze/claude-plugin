@@ -68,12 +68,12 @@ This aligns with the error handling hierarchy in `error-handling-patterns/`:
 - `defonce` with mutable values
 - JS interop mutable state (`set!`, `.push`, mutable JS objects)
 
-**Approval workflow:**
-1. FIRST: Attempt decomplected pure design (see `decomplection-first-design`)
-2. THEN: Measure performance at production scale
-3. IF gap >10x: Document finding, propose mutation boundary
-4. FINALLY: **ASK THE USER** for explicit approval with evidence
-5. ONLY AFTER user approves: Implement with documented approval comment
+**Approval workflow** (per `decomplection-first-design`):
+1. **STOP** — Do not write the mutable code yet
+2. **ASK** — Present the atom/ref to the user with a justification
+3. **JUSTIFY** — Explain why a pure design won't work for this case
+4. **WAIT** — The user decides. Do not self-approve.
+5. **DOCUMENT** — After user approves, include approval comment in code
 
 **Without user approval = VIOLATION. Do not proceed.**
 
@@ -179,18 +179,18 @@ Contract tests > Implementation-specific tests
 **When user approves a deviation:**
 
 ```clojure
-;; [DEVIATION TYPE] APPROVED (YYYY-MM-DD):
-;; [Justification with benchmark ID]
-;; [Scope - where it's isolated]
+;; MUTATION APPROVED (YYYY-MM-DD) by [user]:
+;; [Justification — why pure design won't work]
+;; [Scope — where it's isolated]
 (deviation-code)
 ```
 
 **Example:**
 
 ```clojure
-;; MUTATION APPROVED (2025-01-31):
-;; Benchmark cache-performance-001: 10x improvement vs immutable rebuild.
-;; Workload: 1000 cache updates/sec. Isolated to cache module boundary.
+;; MUTATION APPROVED (2025-01-31) by mark:
+;; Cache must be mutable for hot-reload. 10x improvement vs immutable rebuild.
+;; Isolated to cache module boundary; all reads go through get-cache.
 (def query-cache (atom {}))
 
 (defn update-cache! [k v]

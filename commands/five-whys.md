@@ -61,7 +61,7 @@ Classify the root cause into one or more categories:
 | **Misleading guidance** | Documentation suggests the wrong approach | Edit existing docs to clarify |
 | **Stale documentation** | Docs describe old behavior/architecture | Update to match current code |
 | **Missing constraint** | No rule prevents the bad behavior | Add explicit constraint/red-flag |
-| **Missing discovery pattern** | No documented way to find the right info | Add discovery command to NAVIGATION.md |
+| **Missing discovery pattern** | No documented way to find the right info | Add discovery guidance to relevant skill |
 | **Cognitive shortcut** | Claude took a plausible but wrong shortcut | Add anti-pattern warning |
 | **Insufficient examples** | Docs lack examples of the correct approach | Add concrete examples |
 | **Wrong mental model** | Docs frame the concept in a misleading way | Rewrite framing |
@@ -82,8 +82,7 @@ RATIONALE: [why this prevents the mistake]
 1. CLAUDE.md changes (loaded every session)
 2. MEMORY.md changes (loaded every session)
 3. Skill SKILL.md changes (loaded when relevant)
-4. NAVIGATION.md changes (affects discovery)
-5. New skills or commands (last resort — prefer editing existing docs)
+4. New skills or commands (last resort — prefer editing existing docs)
 
 ### Step 5: Present to User
 
@@ -121,7 +120,7 @@ Should I implement these documentation improvements?
 3. No, just noting for now
 ```
 
-If approved, make the changes using Edit/Write tools.
+If approved, make the changes using Edit/Write tools. After implementing, use [learning-capture](../skills/learning-capture/) to decide which insights to save for future sessions.
 
 ## Anti-Patterns
 

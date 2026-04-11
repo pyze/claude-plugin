@@ -25,6 +25,8 @@ These principles guide planning, implementation, and review:
 - **TDD** — write/update tests before implementation.
 - **Decomplection** — one fold: each thing has one role, one concept, one dimension. State is never simple. All dependencies explicit.
 
+All principles apply in every phase, but emphasis shifts: **Plan** → decomplection + risk-assessment. **Do** → fail-fast + TDD. **Check** → DDRY scan + testing-patterns.
+
 See [decomplection-first-design](../decomplection-first-design/) and [error-handling-patterns](../error-handling-patterns/) for details.
 
 ---

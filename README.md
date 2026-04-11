@@ -72,17 +72,18 @@ The plugin provides hooks for PDCA workflow automation and do-phase principle re
 | PDCA plan transition | `PreToolUse:EnterPlanMode` | Transition issue to `pdca:plan`, explain required plan sections |
 | Plan to issue | `PreToolUse:ExitPlanMode` | Require active GitHub issue, auto-post plan as comment (backgrounded) |
 | Plan review gate | `PreToolUse:ExitPlanMode` | Check for `## Decomplection Review` and `## Risk Assessment` markers; verify derisk result |
-| Block writes in plan mode | `PreToolUse:Write` | Block file writes during `pdca:plan` (except `.claude/plans/`) |
 | TDD gate | `PreToolUse:Edit\|Write` | Advisory: warn when editing source files with no test files modified yet (do phase only) |
 | REPL hint | `PreToolUse:Grep` | Suggest REPL for structural queries when nREPL is running |
 | Git commit reminder | `PostToolUse:Bash` | Remind to update issue stack on commit |
 | Issue creation reminder | `PostToolUse:Bash` | Remind that issue body = problem statement |
 | PDCA phase transition | `PostToolUse:Task` | Prompt Check phase when Do tasks complete |
 | Mutable state detection | `PostToolUse:Edit` | Warn on unapproved atom/volatile!/ref/agent introduction |
+| PDCA cycle reflection | `PostToolUse:Bash` | Prompt reflection on efficiency when closing an issue |
 | Assumption violation check | `SubagentStop` | Prompt-based: evaluate if subagent deviated from plan due to unexpected conditions |
 | Principles survival | `PreCompact` | Re-inject TDD/fail-fast/decomplection/assumptions before context compression (do phase only) |
 | Issue stack on notification | `Notification` | Show issue stack breadcrumb |
-| PDCA stop check | `Stop` | Check PDCA phase and prompt next action |
+| Turn snapshot | `UserPromptSubmit` | Snapshot git state at turn start for diff-based reminders |
+| Turn review | `Stop` | Diff against snapshot; TDD, issue update, phase, and /align-docs reminders |
 | Issue stack on start | `SessionStart` | Show current issue stack at session start |
 
 ## Agents (v2.0)
@@ -91,16 +92,17 @@ The plugin provides hooks for PDCA workflow automation and do-phase principle re
 |-------|-------------|
 | `issue-listener` | Monitors GitHub issues for new comments, posts `[claude-response]` replies |
 
-## Scripts (v4.0)
+## Scripts
 
 | Script | Purpose |
 |--------|---------|
 | `pdca-plan-on-enter-plan-mode.sh` | PDCA label transition + explain required plan sections |
 | `plan-to-issue.sh` | Auto-post plan to GitHub issue (backgrounded), block if no issue |
 | `plan-review-gate.sh` | Marker-based gate: check for decomplection/risk sections + verify derisk result |
-| `block-local-plans.sh` | Block file writes during `pdca:plan` (except `.claude/plans/`) |
 | `do-phase-principles-reminder.sh` | PreCompact: re-inject TDD/fail-fast/decomplection/assumptions |
 | `tdd-gate.sh` | Advisory TDD check: warn on source edits when no tests modified yet |
+| `turn-snapshot.sh` | UserPromptSubmit: snapshot git state at turn start |
+| `turn-review.sh` | Stop: diff against snapshot, produce targeted reminders (TDD, issue update, phase) |
 | `generate-readme-catalog.sh` | Generate Skills/Commands tables from frontmatter (`--update` to write to README) |
 | `statusline.sh` | Status line showing issue stack, PDCA phase, model, context % |
 

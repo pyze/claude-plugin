@@ -22,6 +22,8 @@ This skill covers: **When/what to specify** - deciding if specs are needed, how 
 - Recording discoveries → [learning-capture](../learning-capture/)
 - Converting spec examples to tests → [bdd-scenarios](../bdd-scenarios/)
 
+**Pipeline:** Specification (this skill) → BDD scenarios ([bdd-scenarios](../bdd-scenarios/)) → TDD implementation (`superpowers:test-driven-development`). Write the spec first, convert examples to Given/When/Then, then red-green-refactor.
+
 ## When to Use This Skill
 
 **Consider using `superpowers:brainstorming` first** if you haven't explored WHAT to build yet.
@@ -251,19 +253,7 @@ Implementation reveals issues?
 
 ## Specification-Driven Testing
 
-**Specification examples become tests:**
-
-```clojure
-;; Specification example becomes test
-(deftest authenticate-user-test
-  (testing "Specification example: user-auth-001"
-    (let [result (authenticate-user {:email "user@example.com"
-                                     :password "secret"})]
-      (is (uuid? (:user-id result)))
-      (is (string? (:auth-token result))))))
-```
-
-For assertion-based validation patterns, see [error-handling-patterns](../error-handling-patterns/).
+Specification examples become executable tests. See [bdd-scenarios](../bdd-scenarios/) for converting examples to Given/When/Then scenarios. For assertion-based validation, see [error-handling-patterns](../error-handling-patterns/).
 
 ---
 
