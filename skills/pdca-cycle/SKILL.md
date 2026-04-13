@@ -78,14 +78,15 @@ Post the task list and implementation plan as the **first comment**, not in the 
 ---
 ## PDCA Reminder
 This issue follows the PDCA cycle. When all tasks above are complete:
-1. Update the issue label from `pdca:do` → `pdca:check`
-2. Update `.claude/issue-stack.md` phase from `do` → `check`
-3. Enter plan mode
-4. Review all changes against this plan and post a gap analysis as a comment
-5. Evaluate all touched files for purity violations — present for user approval
-6. Run fallback code scan (missing data fallbacks + refactoring fallbacks)
-7. Reflect on lessons learned during Do — save durable insights to auto-memory
-8. Present the gap analysis to the user and transition to `react`
+1. Commit all Do-phase changes (creates a checkpoint to build from or finalize)
+2. Update the issue label from `pdca:do` → `pdca:check`
+3. Update `.claude/issue-stack.md` phase from `do` → `check`
+4. Enter plan mode
+5. Review all changes against this plan and post a gap analysis as a comment
+6. Evaluate all touched files for purity violations — present for user approval
+7. Run fallback code scan (missing data fallbacks + refactoring fallbacks)
+8. Reflect on lessons learned during Do — save durable insights to auto-memory
+9. Present the gap analysis to the user and transition to `react`
 Do not close this issue or declare done until the full cycle completes.
 ```
 
@@ -103,9 +104,22 @@ Execute the plan by dispatching sub-agents for each task. Update issue checkboxe
 
 **The natural temptation is to adapt and keep going. Do not.** The plan was approved as a whole — if its foundation is wrong, the entire approach may need rethinking. Noting "I see this works differently" and continuing is the failure mode. STOP means stop.
 
+### Do → Check transition
+
+When all Do-phase tasks are complete, **commit all changes before transitioning to Check.** This creates a clean checkpoint:
+
+- If Check/React reveals gaps that loop back to Plan, you have a solid base to build from — no risk of losing Do-phase work.
+- If Check/React declares done, the commit is the completed work.
+
+```bash
+git add <changed files>
+git commit -m "feat: <description of what was implemented>"
+gh issue edit #N --remove-label "pdca:do" --add-label "pdca:check"
+```
+
 ### Check (`pdca:check`)
 
-After all Do-phase tasks are complete, **enter plan mode** and produce a gap analysis as a comment on the issue:
+After the Do→Check commit, **enter plan mode** and produce a gap analysis as a comment on the issue:
 
 - Tasks completed vs tasks planned
 - Deviations from the plan (intentional or accidental)
