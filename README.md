@@ -1,148 +1,48 @@
-# Pyze Claude Code Plugin
+# pyze-claude-plugin (Deprecated)
 
-Clojure development skills, coding standards, and workflow infrastructure for Claude Code.
+> **This plugin has been split into focused, composable plugins.** Install the successors instead.
 
-## Installation
+pyze-claude-plugin combined workflow infrastructure, Clojure development skills, and coding standards into a single package. As the plugin grew, the coupling between language-agnostic workflow and Clojure-specific tooling made it harder to use for non-Clojure projects and harder to maintain.
 
-```bash
-/plugin install claude-plugin@pyze-plugins
-```
+It has been replaced by three focused plugins:
 
-Or add to your project's `.claude/settings.json`:
-
-```json
-{
-  "enabledPlugins": {
-    "claude-plugin@pyze-plugins": true
-  }
-}
-```
-
-<!-- BEGIN GENERATED CATALOG -->
-## Skills
-
-| Skill | Description |
-|-------|-------------|
-| `bdd-scenarios` | Convert specification examples into executable Given/When/Then scenarios using clojure.test |
-| `caching-and-purity` | Reason correctly about caching and referential transparency |
-| `clojure-coding-standards` | Comprehensive Clojure code quality standards including functional programming principles, code organization guidelines, and collection transformation patterns - use for writing maintainable, testable, and performant Clojure code |
-| `clojure-mcp-repl` | Execute Clojure/ClojureScript code at the REPL using clojure-mcp (MCP server) |
-| `clojurescript-cross-platform-code` | Write cross-platform ClojureScript code for JVM TDD |
-| `clojurescript-shadow-cljs` | Build ClojureScript with Shadow-CLJS compilation and hot reload |
-| `continuous-eql` | Continuous EQL — Missionary Signal Graph Architecture |
-| `decomplection-first-design` | Decomplection per Rich Hickey: simple = one fold (objective, about the artifact), easy = nearby (subjective, about the programmer) |
-| `documentation-maintenance` | Follow documentation placement and maintenance guidelines |
-| `error-handling-patterns` | Design error handling with fail-fast philosophy, Truss assertions, and Telemere structured logging |
-| `gemini-sdk-clojure` | Use when writing Clojure code that calls the Google Gemini Java SDK (com.google.genai), adding function declarations, building schemas, handling function calls, or debugging varargs interop errors |
-| `integrant-lifecycle` | Manage system lifecycle with Integrant dependency injection |
-| `learning-capture` | Decide when and where to persist learnings |
-| `nucleus-notation` | Encode behavioral directives and data models using mathematical symbols for compressed AI prompts |
-| `pathom3-eql` | Build EQL resolvers with Pathom 3 for data resolution |
-| `pdca-cycle` | Plan-Do-Check-React cycle for complex work |
-| `pr-document` | Use when preparing a pull request, filling out the PR template, or when the user says /pr-document |
-| `pyramid-state-management` | Manage normalized state with Pyramid |
-| `reitit-routing` | Configure server and client routing with Reitit |
-| `repl-driven-development` | TDD and REPL-driven development workflow |
-| `repl-semantic-search` | Use REPL introspection as semantic search over Clojure codebases |
-| `replicant-ui` | Build UI components with Replicant vDOM and hiccup syntax |
-| `rewrite-clj-transforms` | Structural Clojure code modification via bb + rewrite-clj |
-| `risk-assessment` | Evaluate risk levels for plan assumptions and code changes |
-| `specification-first-development` | Write specifications before code to clarify requirements |
-| `tool-selection` | Choose the right tool for code navigation, search, and validation |
-| `wemble-gemini` | Use when using Wemble's Gemini integration - client lifecycle, chat-turn, ask/ask-json/ask-text, tool data maps, context caching, ->schema DSL, and schema compatibility validation |
-
-## Commands
-
-| Command | Description |
-|---------|-------------|
-| `/align-docs` | Proactive documentation audit for ambiguities and conflicts |
-| `/arch-purity` | Architectural gap analysis: validate code against declared architecture |
-| `/code-cleanup` | Static analysis for Clojure code quality violations |
-| `/derisk` | Risk analysis: identify options, validate assumptions at REPL |
-| `/execute` | Execute an implementation plan from a GitHub issue |
-| `/five-whys` | Root cause analysis for Claude mistakes via why chain |
-<!-- END GENERATED CATALOG -->
-
-## Hooks (v4.0)
-
-The plugin provides hooks for PDCA workflow automation and do-phase principle reinforcement:
-
-| Hook | Event | Purpose |
-|------|-------|---------|
-| PDCA plan transition | `PreToolUse:EnterPlanMode` | Transition issue to `pdca:plan`, explain required plan sections |
-| Plan to issue | `PreToolUse:ExitPlanMode` | Require active GitHub issue, auto-post plan as comment (backgrounded) |
-| Plan review gate | `PreToolUse:ExitPlanMode` | Check for `## Decomplection Review` and `## Risk Assessment` markers; verify derisk result |
-| TDD gate | `PreToolUse:Edit\|Write` | Advisory: warn when editing source files with no test files modified yet (do phase only) |
-| REPL hint | `PreToolUse:Grep` | Suggest REPL for structural queries when nREPL is running |
-| Git commit reminder | `PostToolUse:Bash` | Remind to update issue stack on commit |
-| Issue creation reminder | `PostToolUse:Bash` | Remind that issue body = problem statement |
-| PDCA phase transition | `PostToolUse:Task` | Prompt Check phase when Do tasks complete |
-| Mutable state detection | `PostToolUse:Edit` | Warn on unapproved atom/volatile!/ref/agent introduction |
-| PDCA cycle reflection | `PostToolUse:Bash` | Prompt reflection on efficiency when closing an issue |
-| Assumption violation check | `SubagentStop` | Prompt-based: evaluate if subagent deviated from plan due to unexpected conditions |
-| Principles survival | `PreCompact` | Re-inject TDD/fail-fast/decomplection/assumptions before context compression (do phase only) |
-| Issue stack on notification | `Notification` | Show issue stack breadcrumb |
-| Turn snapshot | `UserPromptSubmit` | Snapshot git state at turn start for diff-based reminders |
-| Turn review | `Stop` | Diff against snapshot; TDD, issue update, phase, and /align-docs reminders |
-| Issue stack on start | `SessionStart` | Show current issue stack at session start |
-
-## Agents (v2.0)
-
-| Agent | Description |
-|-------|-------------|
-| `issue-listener` | Monitors GitHub issues for new comments, posts `[claude-response]` replies |
-
-## Scripts
-
-| Script | Purpose |
+| Plugin | Purpose |
 |--------|---------|
-| `pdca-plan-on-enter-plan-mode.sh` | PDCA label transition + explain required plan sections |
-| `plan-to-issue.sh` | Auto-post plan to GitHub issue (backgrounded), block if no issue |
-| `plan-review-gate.sh` | Marker-based gate: check for decomplection/risk sections + verify derisk result |
-| `do-phase-principles-reminder.sh` | PreCompact: re-inject TDD/fail-fast/decomplection/assumptions |
-| `tdd-gate.sh` | Advisory TDD check: warn on source edits when no tests modified yet |
-| `turn-snapshot.sh` | UserPromptSubmit: snapshot git state at turn start |
-| `turn-review.sh` | Stop: diff against snapshot, produce targeted reminders (TDD, issue update, phase) |
-| `generate-readme-catalog.sh` | Generate Skills/Commands tables from frontmatter (`--update` to write to README) |
-| `statusline.sh` | Status line showing issue stack, PDCA phase, model, context % |
+| [pyze-workflow](https://github.com/pyze/pyze-workflow) | Language-agnostic workflow discipline: PDCA cycle, risk assessment, decomplection, TDD gates |
+| [pyze-clojure](https://github.com/pyze/pyze-clojure) | Clojure/ClojureScript skills: coding standards, REPL workflows, Integrant, Pathom, Replicant |
+| [pyze-python](https://github.com/pyze/pyze-python) | Python companion skills: pytest patterns, `@lru_cache` correctness, exception chaining |
 
-## Status Line
+## Migration
 
-The plugin ships a status line script. To enable, add to your project or user `settings.json`:
+1. Remove the legacy plugin:
+   ```bash
+   claude plugin remove claude-plugin@pyze-plugins
+   ```
 
-```json
-{
-  "statusLine": {
-    "type": "command",
-    "command": "<path-to-plugin>/scripts/statusline.sh"
-  }
-}
-```
+2. Install the replacements:
+   ```bash
+   claude plugin add pyze/pyze-workflow
+   # Then add your language companion:
+   claude plugin add pyze/pyze-clojure   # for Clojure projects
+   claude plugin add pyze/pyze-python    # for Python projects
+   ```
 
-**Displays:** `[Model] #52 (do) | 23% ctx | $1.45`
+3. Clear the cached legacy plugin to avoid hook conflicts:
+   ```bash
+   rm -rf ~/.claude/plugins/cache/pyze-plugins/claude-plugin
+   ```
 
-- Current model name
-- Top issue from stack + PDCA phase
-- Context window usage
-- Session cost
+4. Restart Claude Code.
 
-## Project Setup Requirements
+## What moved where
 
-Projects using the workflow features (PDCA, issue stack) should create:
-
-- `.claude/issue-stack.md` — Issue stack file (empty or with initial issues)
-
-## Contributing
-
-1. Fork `pyze/claude-plugin`
-2. Clone locally
-3. Edit skills/commands/hooks/scripts
-4. Test by starting new Claude Code sessions
-5. PR to `pyze/claude-plugin`
-
-### Versioning
-
-Semver: major (breaking skill renames/removals), minor (new skills/hooks), patch (content fixes).
+| Legacy skill/command | New home |
+|---------------------|----------|
+| pdca-cycle, risk-assessment, decomplection-first-design, testing-patterns, error-handling-patterns, caching-and-purity, bdd-scenarios, tool-selection, specification-first-development, documentation-maintenance, learning-capture, pr-document, formal-verification | [pyze-workflow](https://github.com/pyze/pyze-workflow) |
+| /pdca, /align-docs, /arch-purity, /code-cleanup, /derisk, /five-whys | [pyze-workflow](https://github.com/pyze/pyze-workflow) |
+| clojure-coding-standards, clojure-mcp-repl, integrant-lifecycle, pathom3-eql, replicant-ui, shadow-cljs, rewrite-clj-transforms, and all other Clojure skills | [pyze-clojure](https://github.com/pyze/pyze-clojure) |
+| PDCA hooks, TDD gate, turn review, plan-to-issue | [pyze-workflow](https://github.com/pyze/pyze-workflow) |
+| nREPL hint, mutable state warning | [pyze-clojure](https://github.com/pyze/pyze-clojure) |
 
 ## License
 

@@ -1,11 +1,11 @@
 ---
-name: execute
-description: Execute an implementation plan from a GitHub issue
+name: pdca
+description: Run the PDCA cycle on a GitHub issue
 ---
 
-# /execute
+# /pdca
 
-Execute an implementation plan from a GitHub issue.
+Run the PDCA cycle on a GitHub issue.
 
 Takes a GitHub issue number as `$ARGUMENTS` (bare integer or `#`-prefixed). If no argument, reads the top of `.claude/issue-stack.md`.
 
