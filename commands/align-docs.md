@@ -18,16 +18,22 @@ Proactively audit all Claude-facing documents for ambiguities, redundancies, con
 
 ## How It Works
 
-### Phase 1: Discovery (4 Parallel Agents)
+### Phase 1: Discovery (5 Parallel Agents)
 
-Launch 4 Explore agents in a single message. Each agent reads the full document set but focuses on one analysis dimension.
+Launch 5 Explore agents in a single message. Each agent reads the relevant document sets but focuses on one analysis dimension.
 
-**Document set** (all Claude-facing files):
+**Project document set** (local Claude-facing files — editable):
 - `CLAUDE.md` (project root)
 - `.claude/skills/*/SKILL.md` and sub-files (all skills)
 - `.claude/commands/*.md` (all commands)
 - Auto-memory files (`MEMORY.md` index + all referenced `.md` files in the memory directory)
 - `.claude/agents/*.md`
+
+**Plugin document set** (installed plugin skills — read-only reference):
+- `~/.claude/plugins/cache/*/skills/*/SKILL.md`
+- Discover installed plugins via the skill listing in the system prompt
+
+**Important:** Plugin skills are versioned externally. Fixes are always proposed to project-local files, never to plugin skill files. When a project file contradicts a plugin skill, the project file changes. When a project discovers knowledge that belongs in a plugin, the recommendation is "contribute upstream."
 
 #### Agent 1: Redundancy
 
@@ -51,6 +57,7 @@ Launch 4 Explore agents in a single message. Each agent reads the full document 
 > - Concepts missing from the canonical sources table entirely
 > - Memory operational notes that duplicate skill content verbatim
 > - CLAUDE.md sections that repeat what a skill already covers in detail
+> - **Project rules that duplicate plugin skill coverage** — if an installed plugin skill already covers a topic, a project CLAUDE.md rule on the same topic is redundant and will drift. Recommend removing from CLAUDE.md.
 
 #### Agent 2: Conflicts
 
@@ -74,6 +81,7 @@ Launch 4 Explore agents in a single message. Each agent reads the full document 
 > - PDCA/planning/execution guidance that's inconsistent across sections
 > - Auto-start policy vs plan-mode restrictions
 > - Testing guidance that differs between testing-patterns skill and CLAUDE.md
+> - **Project CLAUDE.md rules that contradict installed plugin skills** — the plugin skill is authoritative; recommend updating or removing the project rule
 
 #### Agent 3: Staleness
 
@@ -117,8 +125,35 @@ Launch 4 Explore agents in a single message. Each agent reads the full document 
 > Promotion criteria:
 > - **Promote to skill** if the memory describes a reusable pattern, coding guideline, or design principle that applies across projects. Check if a skill already covers this — if so, the memory is redundant and should be deleted.
 > - **Promote to CLAUDE.md** if the memory describes a project-specific convention, workflow preference, or configuration that applies to the current project but not others.
+> - **Contribute to plugin** if the memory describes a cross-project pattern that an installed plugin skill should cover but doesn't (e.g., a debugging technique, a framework gotcha, a workflow improvement).
 > - **Keep as memory** if the memory is about the user (preferences, role), is time-bound (project status), or is a reference pointer (external system locations).
 > - **Delete** if the memory duplicates a skill verbatim or has become stale (references removed features, closed issues, or outdated patterns).
+
+#### Agent 5: Plugin Gap Analysis
+
+> Read the project document set (CLAUDE.md, project skills, memory files) AND the plugin document set (installed plugin skills). Look for knowledge in project-local files that belongs in a plugin skill but isn't there.
+>
+> Report findings in this format:
+> ```
+> ## Plugin Gap Findings
+>
+> ### G1: [Knowledge that should be in a plugin]
+> - **Location:** project-file.md:section — "quoted knowledge"
+> - **Target plugin skill:** [plugin-name:skill-name]
+> - **Why it belongs there:** [cross-project pattern / framework-specific / workflow improvement]
+> - **Action:** Contribute upstream — open an issue or PR on the plugin repo
+> ```
+>
+> What to look for:
+> - Project CLAUDE.md rules that are language-specific but not in the language companion plugin (e.g., a Clojure debugging technique in CLAUDE.md that should be in pyze-clojure)
+> - Project CLAUDE.md rules that are workflow-general but not in pyze-workflow (e.g., a planning heuristic that applies to all projects)
+> - Memory files containing validated patterns that have been confirmed across multiple sessions but remain project-local
+> - Project skills that are not project-specific — they describe general practices that other projects would benefit from
+>
+> Do NOT flag:
+> - Project-specific conventions (naming, directory structure, deployment targets)
+> - User preferences or role information
+> - Time-bound project status
 
 ### Phase 2: Merge & Prioritize
 
@@ -129,11 +164,14 @@ After all 4 agents complete, merge their findings:
    | Category | Severity | Rationale |
    |----------|----------|-----------|
    | Conflict | High | Contradictory guidance causes wrong behavior |
+   | Plugin conflict | High | Project rule contradicts plugin skill — plugin is authoritative |
    | Staleness | High | Dead references waste investigation time |
    | Memory duplicate | High | Memory duplicating skill content causes drift |
+   | Plugin redundancy | Medium | Project rule duplicates plugin skill — will drift independently |
    | Redundancy | Medium | Drift risk, but not immediately harmful |
    | Ambiguity | Medium | May cause wrong interpretation |
    | Memory promotion | Medium | Validated pattern stuck in memory instead of skill |
+   | Plugin gap | Medium | Cross-project knowledge stuck in project-local files |
    | Missing canonical | Low | Organizational improvement |
 
 3. **Sort** — high severity first, then by number of files affected (more = higher priority)
@@ -144,10 +182,13 @@ After all 4 agents complete, merge their findings:
 
    Found N findings across M files:
    - X conflicts (high)
+   - X2 plugin conflicts (high)
    - Y stale references (high)
    - Z memory duplicates (high)
-   - W redundancies (medium)
+   - W1 plugin redundancies (medium)
+   - W2 redundancies (medium)
    - V memory promotions (medium)
+   - V2 plugin gaps (medium)
    - U ambiguities (medium)
    - T missing canonicals (low)
 
@@ -217,7 +258,7 @@ Files changed:
 ## Related Commands
 
 - `/five-whys` — Reactive root cause analysis for specific Claude mistakes
-- `/code-cleanup` — Static analysis of Clojure code (not documentation)
+- `/code-cleanup` — Code quality analysis (not documentation)
 
 ## Related Skills
 
