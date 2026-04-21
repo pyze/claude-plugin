@@ -58,6 +58,7 @@ Use Claude's native plan mode. The plan is automatically posted to the GitHub is
 3. On ExitPlanMode, the plan is auto-posted to the active GitHub issue (backgrounded)
 4. If `## Decomplection Review` and `## Risk Assessment` sections are missing, the exit gate will instruct you to dispatch two independent review agents (in parallel) that cold-read the plan — these write to temp files to avoid conflicts, then you merge them into the plan
 5. The derisk result file must show LOW/NONE/ACCEPTED risk to pass the gate
+6. **Allium spec review** — for each behavior the plan will implement or change, check whether an `.allium` spec already describes it sufficiently. If coverage is missing or incomplete, the plan cannot be accepted — run `/allium:elicit` to build or extend the spec, then continue planning. Do not carry spec gaps into the Do phase.
 
 **Issue body format** (problem first — see [documentation-maintenance](../documentation-maintenance/)):
 ```markdown
@@ -85,8 +86,9 @@ This issue follows the PDCA cycle. When all tasks above are complete:
 5. Review all changes against this plan and post a gap analysis as a comment
 6. Evaluate all touched files for purity violations — present for user approval
 7. Run fallback code scan (missing data fallbacks + refactoring fallbacks)
-8. Reflect on lessons learned during Do — save durable insights to auto-memory
-9. Present the gap analysis to the user and transition to `react`
+8. Run spec alignment scan (`/allium:weed`) on touched components — fix code bugs or stop for user input before updating specs
+9. Reflect on lessons learned during Do — save durable insights to auto-memory
+10. Present the gap analysis to the user and transition to `react`
 Do not close this issue or declare done until the full cycle completes.
 ```
 
@@ -129,6 +131,7 @@ After the Do→Check commit, **enter plan mode** and produce a gap analysis as a
 - Quality concerns (tests missing, edge cases unhandled)
 - Purity violations in touched files — flag hidden state, impure functions, missing `!` suffixes
 - **DDRY scan** — check for DRY extractions that complect unrelated concerns. Shared functions should have one role and compose cleanly. If an abstraction serves multiple callers by doing multiple things, it violates DDRY — split it.
+- **Spec alignment scan** — run `/allium:weed` on components touched during Do (skip if no `.allium` files exist for those components). Any spec/code divergence is a bug: if the code is wrong, fix it; if the spec is wrong, stop and get user input before updating the spec.
 - **Fallback code scan** — run `git diff` against the branch point and scan changed Clojure files for two categories of fallback:
   1. **Missing data fallbacks**: `(or <expr> <literal>)`, `(get m k default)`, `(when-not x ...)` with fallback body, `(try ... (catch ... <default>))` — should the data be present at the source instead?
   2. **Refactoring fallbacks**: conditional dispatch between old and new code paths, deprecated function wrappers that forward to new implementations, feature flags gating old vs new behavior — if we're refactoring, cut over cleanly. Don't keep both paths alive.
