@@ -86,7 +86,7 @@ Implementation files must contain traceability comments added by `specification-
 // Rules: IssueSession, RejectLogin
 ```
 
-If no traceability comments are found, stop and prompt the user to add them before proceeding.
+If no traceability comments are found in any file, stop and prompt the user to add them before proceeding. If only some files have traceability comments, proceed with the covered files and note which files were skipped due to missing traceability in the Step 5 report.
 
 ### Workflow
 
@@ -116,7 +116,7 @@ For each rule with `requires` clauses:
 1. Identify the implementation's corresponding precondition check
 2. Call `chiasmus_formalize`: "The implementation's precondition for `<rule name>` matches the spec's `requires` clause: `<requires text>`"
 3. Fill slots with the implementation's actual constraint expressions
-4. Call `chiasmus_verify` (Z3)
+4. Call `chiasmus_verify` (`chiasmus_formalize` will have returned a Z3/SMT-LIB template for this property type)
 
 **Step 4 — Verify state machine transitions (Prolog)**
 
@@ -125,7 +125,7 @@ If the spec defines state machines (entities with status enums + transition rule
 1. List expected transitions from the spec: `{from_state, to_state, trigger_rule}` for each `transitions_to`/`becomes` rule
 2. List actual transitions from the implementation (read the code)
 3. Call `chiasmus_formalize`: "The implementation's state transitions exactly match the spec: no extra transitions, no missing transitions"
-4. Call `chiasmus_verify` (Prolog) with `explain=true` to get derivation traces
+4. Call `chiasmus_verify` with `explain=true` to get derivation traces (`chiasmus_formalize` will have returned a Prolog template for state machine queries)
 
 **Step 5 — Report results**
 
@@ -137,6 +137,8 @@ For each verification:
 **On any FAIL:** Stop immediately.
 - If the **code** is wrong: fix it directly
 - If the **spec** is wrong: per CLAUDE.md, stop and get user input before modifying the spec
+
+**Triage rule:** Assume the code is wrong unless the Chiasmus counterexample reveals a scenario the spec has no rule for (i.e., the case is simply unmodeled). If the counterexample corresponds to a real input that the spec's `requires` guards would accept but no `ensures` rule handles, the spec is incomplete — stop and get user input.
 
 ---
 
