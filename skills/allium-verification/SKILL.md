@@ -56,12 +56,20 @@ For each property identified in Step 2:
 
 **Step 4 — Report results**
 
-For each property:
+The SAT/UNSAT interpretation depends on the property type:
 
-- **PASS (UNSAT)**: `"✓ <property description> — UNSAT (no counterexample). Evidence: <Chiasmus output>"`
-- **FAIL (SAT)**: `"✗ <property description> — SAT. Counterexample: <Chiasmus output>"`
+| Property type | PASS result | FAIL result |
+|---------------|-------------|-------------|
+| Rule conflict | UNSAT — no conflicting case exists | SAT — counterexample found |
+| Invariant satisfiability | SAT — a valid state exists | UNSAT — no valid state, invariant is self-contradictory |
+| State machine completeness | UNSAT — no dead-end state exists | SAT — dead-end state found |
 
-**On any FAIL:** Stop immediately. Per CLAUDE.md, spec bugs require user input before any changes to the spec. Report the counterexample and ask the user whether the spec or the domain understanding is wrong.
+Report each property using the correct interpretation:
+
+- **PASS**: `"✓ <property description> — <UNSAT/SAT per table above>. Evidence: <Chiasmus output>"`
+- **FAIL**: `"✗ <property description> — <SAT/UNSAT per table above>. <counterexample or explanation>"`
+
+**On any FAIL:** Stop immediately. Per CLAUDE.md, spec bugs require user input before any changes to the spec. Report the result and ask the user whether the spec or the domain understanding is wrong.
 
 ---
 
@@ -94,7 +102,12 @@ For each surface in the spec:
 
 1. Identify the entry point (the function/route that corresponds to the surface's `provides` operation)
 2. Identify the required handler (the function that enforces the surface's contract)
-3. Call `chiasmus_graph` with a reachability query: "Does every call path from `<entry point>` pass through `<required handler>`?"
+3. Call `chiasmus_graph` with structured parameters:
+   - `files`: the implementation files found in Step 1 for this surface
+   - `analysis`: `"reachability"`
+   - `from`: the entry point function name
+   - `to`: the required handler function name
+4. Interpret result: if all paths from `from` reach `to` → PASS; if any path bypasses `to` → FAIL
 
 **Step 3 — Verify rules with `requires` guards (constraint matching)**
 
