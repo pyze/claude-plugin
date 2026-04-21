@@ -5,44 +5,40 @@ set -euo pipefail
 # - No active issue → deny
 # - No plan file → allow through silently
 # - Plan exists → post to issue (backgrounded), allow through
+#
+# Hook input arrives via stdin as JSON (per Claude Code hook spec).
+
+# Read stdin once — hooks receive JSON input via stdin
+HOOK_INPUT=""
+if [ ! -t 0 ]; then
+  HOOK_INPUT=$(cat)
+fi
 
 STACK="${CLAUDE_PROJECT_DIR:?CLAUDE_PROJECT_DIR not set}/.claude/issue-stack.md"
 
 if [ ! -f "$STACK" ]; then
-  cat <<'DENY'
-{
-  "hookSpecificOutput": {
-    "hookEventName": "PreToolUse",
-    "permissionDecision": "deny",
-    "permissionDecisionReason": "NO ACTIVE ISSUE\n\nCreate a GitHub issue before exiting plan mode. The plan will be automatically posted to the issue.\n\ngh issue create --title \"...\" --body \"...\"\n\nThen add it to .claude/issue-stack.md and call ExitPlanMode again."
-  }
-}
-DENY
+  echo '{"hookSpecificOutput":{"permissionDecision":"deny","permissionDecisionReason":"NO ACTIVE ISSUE\n\nCreate a GitHub issue before exiting plan mode. The plan will be automatically posted to the issue.\n\ngh issue create --title \"...\" --body \"...\"\n\nThen add it to .claude/issue-stack.md and call ExitPlanMode again."}}'
   exit 0
 fi
 
 ISSUE=$(grep '^- #' "$STACK" | head -1 | grep -o '#[0-9]*' | tr -d '#' || true)
 
 if [ -z "$ISSUE" ]; then
-  cat <<'DENY'
-{
-  "hookSpecificOutput": {
-    "hookEventName": "PreToolUse",
-    "permissionDecision": "deny",
-    "permissionDecisionReason": "NO ACTIVE ISSUE\n\nThe issue stack is empty. Create a GitHub issue before exiting plan mode.\n\ngh issue create --title \"...\" --body \"...\"\n\nThen add it to .claude/issue-stack.md and call ExitPlanMode again."
-  }
-}
-DENY
+  echo '{"hookSpecificOutput":{"permissionDecision":"deny","permissionDecisionReason":"NO ACTIVE ISSUE\n\nThe issue stack is empty. Create a GitHub issue before exiting plan mode.\n\ngh issue create --title \"...\" --body \"...\"\n\nThen add it to .claude/issue-stack.md and call ExitPlanMode again."}}'
   exit 0
 fi
 
-# Find most recent plan file — check both user-level and project-level directories
-plan_file=$(ls -t "$HOME/.claude/plans/"*.md "${CLAUDE_PROJECT_DIR:?CLAUDE_PROJECT_DIR not set}/.claude/plans/"*.md 2>/dev/null | head -1 || true)
+# Find plan file — pass saved stdin to helper
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+plan_file=$(echo "$HOOK_INPUT" | bash "$SCRIPT_DIR/find-plan-file.sh" || true)
 
-# No plan file → allow through
-if [ -z "$plan_file" ]; then
+# No plan file → allow through silently
+if [ -z "$plan_file" ] || [ ! -f "$plan_file" ]; then
   exit 0
 fi
+
+# Write the plan path for other tools/scripts to reference
+echo "$plan_file" > "$CLAUDE_PROJECT_DIR/.claude/active-plan-path"
 
 # Build comment body: plan + PDCA reminder
 PDCA_REMINDER='

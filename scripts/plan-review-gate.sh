@@ -5,6 +5,15 @@ set -euo pipefail
 # Checks plan file for ## Decomplection Review and ## Risk Assessment.
 # If missing → deny with instructions to dispatch review agents.
 # If present → verify derisk result file for risk level.
+#
+# Hook input arrives via stdin as JSON (per Claude Code hook spec).
+# Runs in parallel with plan-to-issue.sh — finds plan file independently.
+
+# Read stdin once — hooks receive JSON input via stdin
+HOOK_INPUT=""
+if [ ! -t 0 ]; then
+  HOOK_INPUT=$(cat)
+fi
 
 # Get active issue number for messages
 STACK="${CLAUDE_PROJECT_DIR:?CLAUDE_PROJECT_DIR not set}/.claude/issue-stack.md"
@@ -13,11 +22,12 @@ if [ -f "$STACK" ]; then
   ISSUE=$(grep '^- #' "$STACK" | head -1 | grep -o '#[0-9]*' | tr -d '#' || true)
 fi
 
-# Find most recent plan file — check both user-level and project-level directories
-plan_file=$(ls -t "$HOME/.claude/plans/"*.md "${CLAUDE_PROJECT_DIR:?CLAUDE_PROJECT_DIR not set}/.claude/plans/"*.md 2>/dev/null | head -1 || true)
+# Find plan file — pass saved stdin to helper
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+plan_file=$(echo "$HOOK_INPUT" | bash "$SCRIPT_DIR/find-plan-file.sh" || true)
 
 # No plan file → allow through
-if [ -z "$plan_file" ]; then
+if [ -z "$plan_file" ] || [ ! -f "$plan_file" ]; then
   exit 0
 fi
 
@@ -39,7 +49,6 @@ fi
 
 # If any markers missing → deny with agent dispatch instructions
 if [ -n "$missing" ]; then
-  # Build JSON using python3 to handle all escaping correctly
   python3 -c "
 import json, sys
 missing = sys.argv[1]
@@ -85,26 +94,17 @@ When both agents complete:
 1. Append /tmp/plan-decomplection-review.md to the plan as ## Decomplection Review
 2. Append /tmp/plan-risk-assessment.md to the plan as ## Risk Assessment
 3. Call ExitPlanMode again.'''
-print(json.dumps({'hookSpecificOutput': {'hookEventName': 'PreToolUse', 'permissionDecision': 'deny', 'permissionDecisionReason': reason}}))
+print(json.dumps({'hookSpecificOutput': {'permissionDecision': 'deny', 'permissionDecisionReason': reason}}))
 " "$missing"
   exit 0
 fi
 
 # Both markers present — scan every RISK: line in the Risk Assessment section
-# Extract all RISK: values between ## Risk Assessment and the next ## heading
 risk_lines=$(awk '/^## Risk Assessment/{found=1; next} found && /^## /{exit} found && /RISK:/{print}' "$plan_file")
 
 # No RISK: lines found
 if [ -z "$risk_lines" ]; then
-  cat <<'DENY'
-{
-  "hookSpecificOutput": {
-    "hookEventName": "PreToolUse",
-    "permissionDecision": "deny",
-    "permissionDecisionReason": "NO RISK ENTRIES FOUND\n\nThe ## Risk Assessment section exists but contains no RISK: lines.\n\nEach assumption must have a RISK: NONE/LOW/MEDIUM/HIGH/ACCEPTED line.\nAdd risk entries, then call ExitPlanMode again."
-  }
-}
-DENY
+  echo '{"hookSpecificOutput":{"permissionDecision":"deny","permissionDecisionReason":"NO RISK ENTRIES FOUND\n\nThe ## Risk Assessment section exists but contains no RISK: lines.\n\nEach assumption must have a RISK: NONE/LOW/MEDIUM/HIGH/ACCEPTED line.\nAdd risk entries, then call ExitPlanMode again."}}'
   exit 0
 fi
 
@@ -112,12 +112,11 @@ fi
 blocking_risks=$(echo "$risk_lines" | grep -iE 'RISK:\s*(MEDIUM|HIGH)' || true)
 
 if [ -n "$blocking_risks" ]; then
-  # Format the blocking risks for display
   python3 -c "
 import json, sys
 lines = sys.argv[1].strip()
 reason = 'UNRESOLVED RISKS\n\nThe following assumptions have MEDIUM or HIGH risk:\n\n' + lines + '\n\nDo NOT loop /derisk again.\n\nPresent these risks to the user and ask how they want to proceed:\n- Accept the risks and continue\n- Revise the plan to avoid the risky areas\n- Validate the assumptions to reduce risk\n\nIf the user accepts a risk, change its RISK: line to RISK: ACCEPTED\n\nThen call ExitPlanMode again.'
-print(json.dumps({'hookSpecificOutput': {'hookEventName': 'PreToolUse', 'permissionDecision': 'deny', 'permissionDecisionReason': reason}}))
+print(json.dumps({'hookSpecificOutput': {'permissionDecision': 'deny', 'permissionDecisionReason': reason}}))
 " "$blocking_risks"
   exit 0
 fi

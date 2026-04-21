@@ -94,6 +94,8 @@ Do not close this issue or declare done until the full cycle completes.
 
 Execute the plan by dispatching sub-agents for each task. Update issue checkboxes and add comments as work completes.
 
+**Pre-existing failures:** When you encounter test failures, lint errors, or other issues that predate the current branch, **create a GitHub issue immediately** — do not just note them in conversation. Check first (`gh issue list -S "keyword"`) to avoid duplicates. These issues are tracked separately and do not block the current work.
+
 **Halt-on-violated-assumptions:** Before or during each task, verify the core assumptions listed in the plan. If any assumption is wrong, **STOP immediately** — do not attempt workarounds. Post a comment explaining which assumption was violated and what was actually observed, then transition back to `pdca:plan`.
 
 **What counts as a violated assumption:**
