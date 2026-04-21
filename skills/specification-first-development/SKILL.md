@@ -11,18 +11,22 @@ Specifications are the source of truth that drives implementation, not vice vers
 
 **Code serves specifications.** Write specifications before code to preserve clear intent from requirements to implementation.
 
+Behavioral specifications live in `.allium` files using the [Allium language](https://github.com/juxt/allium). Allium is implementation-agnostic — the same spec works regardless of language or framework.
+
 ---
 
 ## Skill Boundary
 
-This skill covers: **When/what to specify** - deciding if specs are needed, how to write them.
+This skill covers: **When/what to specify** — deciding if specs are needed, which allium skill to use, and how to write them.
 
 **Use DIFFERENT skill if:**
 - Where to store documentation → [documentation-maintenance](../documentation-maintenance/)
 - Recording discoveries → [learning-capture](../learning-capture/)
 - Converting spec examples to tests → [bdd-scenarios](../bdd-scenarios/)
 
-**Pipeline:** Specification (this skill) → BDD scenarios ([bdd-scenarios](../bdd-scenarios/)) → TDD implementation (`superpowers:test-driven-development`). Write the spec first, convert examples to Given/When/Then, then red-green-refactor.
+**Pipeline:** `allium:elicit` → `.allium` spec → `allium:propagate` → BDD scenarios ([bdd-scenarios](../bdd-scenarios/)) → TDD (`superpowers:test-driven-development`).
+
+---
 
 ## When to Use This Skill
 
@@ -77,61 +81,89 @@ Feature Complexity       | Specification Level
 
 ---
 
-## Specification Structure
+## Specification Format
 
-**Every specification should include:**
+Specs live in `.allium` files. Allium captures observable behavior — what the system does — without prescribing implementation.
 
-```clojure
-{:specification/id            "feature-name-001"  ; Unique identifier
- :specification/intent        "Clear description of what and why"
- :specification/inputs        [{:name "param" :type :keyword :required true}]
- :specification/outputs       {:success {...} :error {...}}
- :specification/examples      [{:input {...} :output {...}}]
- :specification/uncertainties ["[?] Open questions or assumptions"]}
+**Starting a spec:** Use the `allium:elicit` skill to build a spec through structured conversation, or `allium:distill` to extract a spec from existing code.
+
+### Example: Authentication Surface
+
+```allium
+entity User {
+    email: Email
+    password: HashedPassword
+    status: active | suspended
+}
+
+surface Authenticate {
+    facing client: ApiClient
+
+    provides:
+        Login(email: Email, password: PlainPassword)
+
+    @guarantee authenticated
+        A successful login returns a valid session token scoped to the user.
+
+    @guarantee rejected
+        An unrecognized email or wrong password returns an error without
+        revealing which check failed.
+}
+
+rule IssueSession {
+    when: Login(email, password)
+    requires: user: User where email = email and password matches user.password
+    ensures: Session.created(user: user, token: fresh_token())
+}
+
+rule RejectLogin {
+    when: Login(email, password)
+    requires: not (user: User where email = email and password matches user.password)
+    ensures: LoginFailed(reason: invalid_credentials)
+}
 ```
 
-### Example
+### Key Allium Constructs
 
-```clojure
-{:specification/id       "user-auth-001"
- :specification/intent   "Authenticate user with email and password"
- :specification/inputs   [{:name "email" :type :string :required true}
-                          {:name "password" :type :string :required true}]
- :specification/outputs  {:success {:user-id :uuid :auth-token :string}
-                          :error   {:type :keyword :message :string}}
- :specification/examples [{:input  {:email "user@example.com" :password "secret"}
-                           :output {:user-id #uuid "..." :auth-token "..."}}]
- :specification/uncertainties ["[?] Token expiration: 24 hours or 7 days?"]}
+**Entity** — domain object with fields, relationships, and derived values:
+```allium
+entity Order {
+    customer: Customer
+    items: List<LineItem>
+    status: pending | confirmed | shipped | cancelled
+    total: sum(items.price)
+}
 ```
 
----
-
-## Natural Language First
-
-**Express requirements in plain language before translating to code:**
-
-```markdown
-## Specification: Load Data from API
-
-**Intent**: Fetch user data from external API and store in local state.
-
-**Inputs**:
-- user-id (uuid, required): The user to fetch
-- include-profile (boolean, optional): Whether to include profile data
-
-**Process**:
-1. Call external API with user-id
-2. Parse response into application data model
-3. Store in application state
-
-**Outputs**:
-- Success: {:user {...} :profile {...}}
-- Error: {:type :api-error | :parse-error, :message string}
-
-**Open Questions**:
-- [?] Retry policy on API failures?
-- [?] Cache duration for fetched data?
+**Rule** — behavioral specification with trigger, guards, and outcomes:
+```allium
+rule ConfirmOrder {
+    when: CustomerConfirmsOrder(order)
+    requires: order.status = pending
+    requires: order.items.count > 0
+    ensures: order.status = confirmed
+    ensures: OrderConfirmed(order)
+}
 ```
+
+**Surface** — boundary contract between actors and domain:
+```allium
+surface OrderCheckout {
+    facing buyer: Customer
+
+    context cart: Order where customer = buyer and status = pending
+
+    exposes:
+        cart.items
+        cart.total
+
+    provides:
+        CustomerConfirmsOrder(cart)
+            when cart.items.count > 0
+}
+```
+
+For full syntax reference, see the `allium` skill.
 
 ---
 
@@ -167,15 +199,13 @@ Writing specification and encounter:
 DO NOT proceed with coding until ambiguities are resolved!
 ```
 
-**Document the clarification:**
+**Document open questions as allium comments:**
 
-```clojure
-;; BEFORE clarification
-{:specification/uncertainties ["[?] Maximum file size: 100MB or 1GB?"]}
-
-;; AFTER asking user
-{:specification/constraints ["Maximum file size: 1GB"]
- :specification/rationale   "User confirmed 1GB limit sufficient"}
+```allium
+-- [?] Token expiration: 24 hours or 7 days? Pending user clarification.
+rule IssueSession {
+    ...
+}
 ```
 
 ---
@@ -183,77 +213,81 @@ DO NOT proceed with coding until ambiguities are resolved!
 ## 4-Phase Workflow
 
 ### Phase 1: Specify
-1. Write natural language specification
-2. Identify inputs, outputs, edge cases
-3. Document uncertainties
+
+1. **Choose entry point:**
+   - **New feature** → invoke `allium:elicit` to build spec through structured conversation
+   - **Existing code** → invoke `allium:distill` to extract spec from implementation
+2. Write or review the resulting `.allium` file
+3. Identify open questions and mark with `-- [?]`
 4. **Ask user to clarify ONE question at a time**
-5. Create concrete examples
 
 ### Phase 2: Research
-6. Validate assumptions at REPL
-7. Discover technical constraints
-8. **If constraints conflict with spec, ask user for priority**
-9. Refine specification based on findings
+
+5. Validate assumptions at REPL or by reading code
+6. Discover technical constraints
+7. **If constraints conflict with spec:** ask user for priority
+8. Update spec using `allium:tend` — do not edit `.allium` files directly for structural changes
 
 ### Phase 3: Implement
-10. Code implements specification contract
-11. Link code to specification ID in docstrings
-12. **If implementation reveals ambiguity, STOP and ask**
-13. Update specification if needed
+
+9. Code implements the allium spec's surfaces and rules
+10. Link code to spec surface/rule names in comments:
+    ```python
+    # Implements: Authenticate surface, IssueSession rule
+    def login(email: str, password: str) -> Session: ...
+    ```
+11. **If implementation reveals ambiguity:** STOP and ask, then update spec with `allium:tend`
 
 ### Phase 4: Verify
-14. Test against specification examples — see [bdd-scenarios](../bdd-scenarios/) for converting spec examples into Given/When/Then scenarios
-15. Ensure outputs match specification
-16. Verify error handling covers spec error cases
+
+12. Run `allium:propagate` to generate test obligations from the spec
+13. Use those test obligations as input to [bdd-scenarios](../bdd-scenarios/) for Given/When/Then scenarios
+14. Run `allium:weed` to detect divergence between spec and implementation
+15. Fix divergences in spec OR code — never let them drift
 
 ---
 
 ## Traceability
 
-**Link every function to its specification:**
+**Link every module to its allium spec:**
+
+```typescript
+// Implements: specs/auth.allium
+// Surfaces: Authenticate
+// Rules: IssueSession, RejectLogin
+export async function login(email: string, password: string): Promise<Session> { ... }
+```
 
 ```clojure
-(defn authenticate-user
-  "Authenticate user with email and password.
-
-  Implements specification: user-auth-001
-
-  Args:
-    credentials - Map with :email and :password
-
-  Returns:
-    {:user-id uuid, :auth-token string} on success
-    {:type keyword, :message string} on error"
-  [{:keys [email password]}]
-  ...)
+;; Implements: specs/order.allium
+;; Surface: OrderCheckout
+;; Rule: ConfirmOrder
+(defn confirm-order [order] ...)
 ```
 
 ---
 
 ## Living Documents
 
-**Bidirectional updates - specs and code stay synchronized:**
+**Bidirectional updates — specs and code stay synchronized:**
 
 ```
 Requirements change?
     │
-    ├─ Update specification FIRST
+    ├─ Update spec FIRST with allium:tend
     ├─ Review changes (one question at a time)
     └─ Then update code to match
 
 Implementation reveals issues?
     │
-    ├─ Document in specification/uncertainties
+    ├─ Mark in spec with -- [?] comment
     ├─ Ask user to clarify conflicts
-    ├─ Refine specification
+    ├─ Update spec with allium:tend
     └─ Update code to match refined spec
+
+Periodic check:
+    └─ Run allium:weed to surface any drift
 ```
-
----
-
-## Specification-Driven Testing
-
-Specification examples become executable tests. See [bdd-scenarios](../bdd-scenarios/) for converting examples to Given/When/Then scenarios. For assertion-based validation, see [error-handling-patterns](../error-handling-patterns/).
 
 ---
 
@@ -263,16 +297,17 @@ Specification examples become executable tests. See [bdd-scenarios](../bdd-scena
 - **Don't**: Skip spec for "obvious" features (>30 min = needs spec)
 - **Don't**: Implement before resolving spec ambiguities
 - **Don't**: Write spec after implementation (defeats purpose)
+- **Don't**: Let spec and code drift — run `allium:weed` regularly
 
 ---
 
 ## Summary
 
-1. **Specifications before code** - Define intent first
-2. **Natural language first** - Plain language before Clojure
-3. **Ask ONE question at a time** - Resolve ambiguities clearly
-4. **Don't assume** - Validate uncertainties with user
-5. **4-phase workflow** - Specify → Research → Implement → Verify
-6. **Traceability** - Link functions to specification IDs
-7. **Living documents** - Specification ↔ Code stay synchronized
-8. **Examples as tests** - Spec examples become executable tests
+1. **Specifications before code** — define observable behavior in `.allium` first
+2. **Use allium skills** — `elicit` to discover, `distill` from code, `tend` to update, `propagate` for tests, `weed` for divergence
+3. **Ask ONE question at a time** — resolve ambiguities clearly
+4. **Don't assume** — validate uncertainties with user
+5. **4-phase workflow** — Specify → Research → Implement → Verify
+6. **Traceability** — link code comments to spec surface/rule names
+7. **Living documents** — spec ↔ code stay synchronized via `allium:weed`
+8. **Tests from spec** — use `allium:propagate` to generate test obligations

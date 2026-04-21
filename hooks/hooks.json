@@ -159,6 +159,10 @@
           {
             "type": "command",
             "command": "if [ -f \"$CLAUDE_PROJECT_DIR/.claude/issue-stack.md\" ] && grep -q '^- ' \"$CLAUDE_PROJECT_DIR/.claude/issue-stack.md\"; then echo '=== Current Issue Stack ==='; grep '^- ' \"$CLAUDE_PROJECT_DIR/.claude/issue-stack.md\" | head -5; echo ''; echo 'Read the top issue via GitHub MCP before proceeding.'; else echo 'No active issues. Stack is empty.'; fi"
+          },
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/scripts/check-allium.sh\""
           }
         ]
       }

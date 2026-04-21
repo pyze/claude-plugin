@@ -12,6 +12,14 @@ It has been replaced by three focused plugins:
 | [pyze-clojure](https://github.com/pyze/pyze-clojure) | Clojure/ClojureScript skills: coding standards, REPL workflows, Integrant, Pathom, Replicant |
 | [pyze-python](https://github.com/pyze/pyze-python) | Python companion skills: pytest patterns, `@lru_cache` correctness, exception chaining |
 
+## Companion Plugins
+
+| Plugin | Purpose | Install |
+|--------|---------|---------|
+| [allium](https://github.com/juxt/allium) (`allium@juxt-plugins`) | Behavioral specification language. Required for the `specification-first-development` workflow. | `claude plugin add allium@juxt-plugins` |
+
+pyze-workflow's `specification-first-development` skill uses allium `.allium` files as the spec artifact and invokes `allium:elicit`, `allium:tend`, `allium:propagate`, and `allium:weed` directly. Install allium to get the full workflow.
+
 ## Migration
 
 1. Remove the legacy plugin:
