@@ -1,6 +1,8 @@
 {
-  "chiasmus": {
-    "command": "npx",
-    "args": ["-y", "chiasmus"]
+  "mcpServers": {
+    "chiasmus": {
+      "command": "npx",
+      "args": ["-y", "chiasmus"]
+    }
   }
 }
